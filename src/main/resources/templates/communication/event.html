@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+            integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js"
+            integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk"
+            crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Создание/Редактирование диалога</h1>
+<hr/>
+<div class="container">
+    <div style="padding: 10px;">
+        <table>
+            <tr>
+                <td>
+                    <div id="event-container" style="width: 600px;">
+                        <div>
+                            <h4>ID события</h4>
+                            <hr>
+                            <input id="event-id" class="form-control" th:value="${model.id}">
+                            <br/>
+                            <br/>
+                            <!-- Многоразовая/Одноразовая -->
+                            <h4>Многоразовая/Одноразовая карточка</h4>
+                            <hr>
+                            <div>
+                                <input type="checkbox" id="many-use-cart"
+                                       th:checked="true">
+                                <span>(отмечена, значит многоразовая, отметки нет, значит одноразовая)</span>
+                            </div>
+                            <br/>
+                            <br/>
+                            <!-- Категория карточки -->
+                            <h4>Категория карточки</h4>
+                            <hr/>
+                            <div>
+                                <select id="category" class="form-control">
+                                    <option value="0">-- Общая колода --</option>
+                                    <option value="1">Келен незаметно подбрасывает записку</option>
+                                    <option value="2">Стража врывается в таверну</option>
+                                </select>
+                            </div>
+                            <br/>
+                            <!-- Событие карточки -->
+                            <h4>Событие карточки</h4>
+                            <hr/>
+                            <div>
+                                <textarea id="event-text" th:text="${model.eventText}" class="form-control"
+                                          placeholder="Описать происходящее событие"></textarea>
+                            </div>
+                            <br/>
+                            <br/>
+                            <!-- Варианты ответов -->
+                            <h4>Варианты ответов</h4>
+                            <hr/>
+                            <th:block th:each="answer, iStat: ${model.answers}">
+                                <div class="action" id="action">
+                                    <label>ID действия</label>
+                                    <input id="action-id" th:value="${answer.id}" class="form-control" >
+                                    <br/>
+                                    <br/>
+                                    <!-- Многоразовый/Одноразовый ответ -->
+                                    <label>Многоразовый/Одноразовый ответ</label><br/>
+                                    <div>
+                                        <input id="many-use-answer" th:checked="${answer.manyUse}"
+                                               type="checkbox">
+                                        <span>(отмечен, значит многоразовый, отметки нет, значит одноразовый)</span>
+                                    </div>
+                                    <br/>
+                                    <label>Описание ответа</label>
+                                    <div>
+                                    <textarea id="answer-text" th:text="${answer.answerText}" class="form-control"
+                                              placeholder="Описать ответ и(или) действие"></textarea>
+                                    </div>
+                                    <!-- Игровые параметры определяющие конец игры -->
+                                    <label>Игровые параметры определяющие конец игры</label>
+                                    <div>
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input id="answer-gold" type="number" min="-100" max="100"
+                                                           class="form-control"
+                                                           placeholder="Золото">
+                                                </td>
+                                                <td>
+                                                    <input id="answer-reputation" type="number" min="-100" max="100"
+                                                           class="form-control"
+                                                           placeholder="Репутация">
+                                                </td>
+                                                <td>
+                                                    <input id="answer-influence" type="number" min="-100" max="100"
+                                                           class="form-control"
+                                                           placeholder="Влияние">
+                                                </td>
+                                                <td>
+                                                    <input id="answer-shadow" type="number" min="-100" max="100"
+                                                           class="form-control"
+                                                           placeholder="Скрытность">
+                                                </td>
+                                                <td>
+                                                    <input id="answer-luck" type="number" min="-100" max="100"
+                                                           class="form-control"
+                                                           placeholder="Удача">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <!-- Спец игровые предметы -->
+                                    <label>Спец игровые предметы</label>
+                                    <div>
+                                        <select id="special-things" class="form-control" th:multiple="true">
+                                            <option value="0" th:selected="true">-- отсутствие выбора --</option>
+                                            <option value="11">Телохранитель</option>
+                                        </select>
+                                    </div>
+                                    <!-- Привязка карточки -->
+                                    <label>Привязка карточки</label><br/>
+                                    <div>
+                                        <input id="link-cart" type="hidden" value="0">
+                                        <button class="btn btn-warning">
+                                            Сохранить текущую карточку во временной таблице и создать новую
+                                            (привязанную)
+                                        </button>
+                                    </div>
+                                    <!-- Открыть категорию карточек -->
+                                    <label>Открыть категорию карточек</label>
+                                    <div>
+                                        <select id="open-categories" class="form-control" th:multiple="true">
+                                            <option value="0" th:selected="true">-- отсутствие действия --</option>
+                                            <option value="111">Стража врывается в таверну</option>
+                                        </select>
+                                    </div>
+                                    <!-- Закрыть категорию карточек -->
+                                    <label>Закрыть категорию карточек</label>
+                                    <div>
+                                        <select id="close-categories" class="form-control" th:multiple="true">
+                                            <option value="0" th:selected="true">-- отсутствие действия --</option>
+                                            <option value="1111">Келен незаметно подбрасывает записку</option>
+                                        </select>
+                                    </div>
+                                    <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right' onclick='$(this).parent().remove()'>Удалить ответ</button>
+                                    <hr style="background: 1px grey"/>
+                                </div>
+                            </th:block>
+                            <button id="action-add-button" onclick="add()" class="btn btn-primary">Добавить ответ
+                            </button>
+                            <br/>
+                            <br/>
+                            <button id="save-and-edit-button" onclick="save()" class="btn btn-success">Сохранить и
+                                редактировать
+                            </button>
+                            |
+                            <button id="save-and-new-button" onclick="save()" class="btn btn-success">Сохранить и
+                                создать новое событие
+                            </button>
+                        </div>
+                    </div>
+                </td>
+                <td style="vertical-align: text-top; padding-left: 50px;">
+                    <div id="events">
+
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<br/><br/><br/><br/><br/>
+</body>
+</html>
+<style>
+    .display-none {
+        display: none;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .action {
+        padding-left: 10px;
+    }
+
+    .btn, .form-control {
+        border-radius: 0;
+    }
+
+    table {
+        width: 100%;
+    }
+</style>
+<script>
+    async function save() {
+        let cart = {
+            id: $('#event-id').val(),
+            manyUse: $('#many-use-cart').is(":checked"),
+            category: $('#category').val(),
+            eventText: $('#event-text').val(),
+            answers: []
+        }
+        $.each($('.action'), function (e, i) {
+            cart.answers.push({
+                id: $(i).find('#action-id').val(),
+                manyUse: $(i).find('#many-use-answer').is(":checked"),
+                answerText: $(i).find('#answer-text').val(),
+                gold: $(i).find('#answer-gold').val(),
+                reputation: $(i).find('#answer-reputation').val(),
+                influence: $(i).find('#answer-influence').val(),
+                shadow: $(i).find('#answer-shadow').val(),
+                luck: $(i).find('#answer-luck').val(),
+                special: $(i).find('#special-things').val(),
+                link: $(i).find('#link-cart').val(),
+                openCategories: $(i).find('#open-categories').val(),
+                closeCategories: $(i).find('#close-categories').val()
+                //event_id: $('#event-id').val()
+            })
+        })
+        console.log(cart);
+
+        let data = await fetch('/communication/event', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(cart)
+        })
+        if (data.status == 200) {
+            let eventId = await data.json();
+            location.href = '/communication/event?id='+eventId;
+            // $.each(json.answers, function (e,i){
+            //     console.log($('textarea[value="'+i.answerText+'"]'));
+            //     console.log($('textarea[text="'+i.answerText+'"]'));
+            //     console.log($('textarea[val="'+i.answerText+'"]'));
+            //     console.log($('textarea[html="'+i.answerText+'"]'));
+            //     $('textarea[value="'+i.answerText+'"]')
+            //         .closest('#action')
+            //         .find('#action-id').remove();
+            // })
+        }
+    }
+
+    function add() {
+        let eventContainer = $('#event-container');
+        let action = eventContainer.find('#action').clone();
+        action.find('input, textarea').val('');
+        action.find("hr").before("<button class='btn btn-danger' style='float: right' onclick='$(this).parent().remove()'>Удалить ответ</button><br/>");
+        eventContainer.find('#save-and-edit-button').before(action);
+    }
+</script>
+
+
+<div class="container">
+    <h3>Многоразовая/Одноразовая карточка</h3>
+    <p>Карточки делятся на:</p>
+    <ul>
+        <li>Многоразовые</li>
+        <li>Одноразовые</li>
+    </ul>
+    <p>
+        Многоразовые - это карточки массовки, которые создают основной контент, они повторяются бесконечное количество
+        раз <br>
+        Одноразовые - это генераторы какого-то события, они выполняются один раз, после чего игрок их больше не встретят
+        никогда
+    </p>
+    <p>
+        Например: карточка, которая добавляет категорию карточек. Или карточка, которая стартует цепочку сценария,
+        предназначенного на один раз
+    </p>
+
+    <h3>Принадлежность карточки</h3>
+    <p>
+        Карточки принадлежат к какой-то категории. Корневая категория в которой происходит вся массовка "Общая
+        колода".<br>
+        Можно создавать новые категории и добавлять карточки туда, эти карточки не будут видны сразу их следует открыть,<br>
+        а значит в "общую колоду" надо добавить одноразовую карточку которая будет при выполнении открывать все карточки<br>
+        указанной категории.
+    </p>
+
+    <h3>Событие карточки</h3>
+    <p>
+        Событие карточки это просто текст описывающий то, что происходит в этой карточке
+    </p>
+
+    <h3>Варианты ответов</h3>
+    <p>
+        Перечень, доступных действии, который игрок в праве выбирать в качестве реакции на описанное событие карточки
+    </p>
+
+    <h3>Многоразовый/Одноразовый ответ</h3>
+    <p>
+        Ответ как и сама карточка так же может быть многоразовым и одноразовым, после чего,<br>
+        его в этой карточке (если она повторяющиеся) более видно не будет
+    </p>
+
+    <h3>Описание ответа</h3>
+    <p>
+        Текст действия которые игрок выбрал в качестве ответа на событие карточки
+    </p>
+
+    <h3>Игровые параметры определяющие конец игры</h3>
+    <p>
+        Игровые параметры которые игроку следует поддерживать в течении всей игры дабы не проиграть.<br>
+        При достижении 0 или 100 любого из параметра с вероятностью 50%, наступит конец игры.<br>
+        Т.е. пока значение не будет изменено на иное число каждый следующий шаг возможен как последний
+    </p>
+</div>
