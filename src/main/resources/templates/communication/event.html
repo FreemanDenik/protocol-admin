@@ -31,7 +31,7 @@
                             <hr>
                             <div>
                                 <input type="checkbox" id="many-use-cart"
-                                       th:checked="true">
+                                       th:checked="${model.manyUse}">
                                 <span>(отмечена, значит многоразовая, отметки нет, значит одноразовая)</span>
                             </div>
                             <br/>
@@ -42,8 +42,8 @@
                             <div>
                                 <select id="category" class="form-control">
                                     <option value="0">-- Общая колода --</option>
-                                    <option value="1">Келен незаметно подбрасывает записку</option>
-                                    <option value="2">Стража врывается в таверну</option>
+                                    <option th:each="i : ${category}" th:value="${i.getKey()}" th:text="${i.getValue()}"
+                                            th:selected="${i.getKey() == model.category}"></option>
                                 </select>
                             </div>
                             <br/>
@@ -62,7 +62,7 @@
                             <th:block th:each="answer, iStat: ${model.answers}">
                                 <div class="action" id="action">
                                     <label>ID действия</label>
-                                    <input id="action-id" th:value="${answer.id}" class="form-control" >
+                                    <input id="action-id" th:value="${answer.id}" class="form-control">
                                     <br/>
                                     <br/>
                                     <!-- Многоразовый/Одноразовый ответ -->
@@ -84,7 +84,8 @@
                                         <table>
                                             <tr>
                                                 <td>
-                                                    <input id="answer-gold" type="number" min="-100" max="100"
+                                                    <input id="answer-gold" th:value="${answer.gold}" type="number"
+                                                           min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Золото">
                                                 </td>
@@ -115,8 +116,10 @@
                                     <label>Спец игровые предметы</label>
                                     <div>
                                         <select id="special-things" class="form-control" th:multiple="true">
-                                            <option value="0" th:selected="true">-- отсутствие выбора --</option>
-                                            <option value="11">Телохранитель</option>
+                                            <option th:each="i : ${special}" th:value="${i.getKey()}"
+                                                    th:text="${i.getValue()}"
+                                                    th:selected="${answer.special != null ? answer.special.contains(i.getKey()) : false}"></option>
+
                                         </select>
                                     </div>
                                     <!-- Привязка карточки -->
@@ -144,7 +147,9 @@
                                             <option value="1111">Келен незаметно подбрасывает записку</option>
                                         </select>
                                     </div>
-                                    <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right' onclick='$(this).parent().remove()'>Удалить ответ</button>
+                                    <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
+                                            onclick='$(this).parent().remove()'>Удалить ответ
+                                    </button>
                                     <hr style="background: 1px grey"/>
                                 </div>
                             </th:block>
@@ -155,10 +160,10 @@
                             <button id="save-and-edit-button" onclick="save()" class="btn btn-success">Сохранить и
                                 редактировать
                             </button>
-                            |
-                            <button id="save-and-new-button" onclick="save()" class="btn btn-success">Сохранить и
-                                создать новое событие
-                            </button>
+                            <!--                            |-->
+                            <!--                            <button id="save-and-new-button" onclick="save()" class="btn btn-success">Сохранить и-->
+                            <!--                                создать новое событие-->
+                            <!--                            </button>-->
                         </div>
                     </div>
                 </td>
@@ -197,7 +202,7 @@
 </style>
 <script>
     async function save() {
-        let cart = {
+        let event = {
             id: $('#event-id').val(),
             manyUse: $('#many-use-cart').is(":checked"),
             category: $('#category').val(),
@@ -205,7 +210,7 @@
             answers: []
         }
         $.each($('.action'), function (e, i) {
-            cart.answers.push({
+            event.answers.push({
                 id: $(i).find('#action-id').val(),
                 manyUse: $(i).find('#many-use-answer').is(":checked"),
                 answerText: $(i).find('#answer-text').val(),
@@ -218,21 +223,20 @@
                 link: $(i).find('#link-cart').val(),
                 openCategories: $(i).find('#open-categories').val(),
                 closeCategories: $(i).find('#close-categories').val()
-                //event_id: $('#event-id').val()
             })
         })
-        console.log(cart);
+        console.log(event);
 
         let data = await fetch('/communication/event', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(cart)
+            body: JSON.stringify(event)
         })
         if (data.status == 200) {
             let eventId = await data.json();
-            location.href = '/communication/event?id='+eventId;
+            location.href = '/communication/event?id=' + eventId;
             // $.each(json.answers, function (e,i){
             //     console.log($('textarea[value="'+i.answerText+'"]'));
             //     console.log($('textarea[text="'+i.answerText+'"]'));

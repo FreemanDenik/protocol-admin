@@ -5,6 +5,7 @@ import com.execute.protocol.admin.repositories.AnswerRepository;
 import com.execute.protocol.dto.AnswerDto;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 
@@ -28,16 +29,18 @@ public class AnswerServiceImpl implements AnswerService {
 
     /**
      * Удаляет записи answers исходя из разницы между answersDto и answers
+     * Т.е те записи которых нет в dto
+     * Этот метод надо использовать до Mapper преобразовании
      * @param answersDto
      * @param answers
      */
 
     public void deleteAnswersInDtoDifferent(List<AnswerDto> answersDto, List<Answer> answers) {
         List<Integer> dtoIds = answersDto.stream().mapToInt(w -> w.getId()).boxed().toList();
-        List<Integer> Ids = answers.stream().filter(w -> !dtoIds.contains(w.getId()))
+        List<Integer> ids = answers.stream().filter(w -> !dtoIds.contains(w.getId()))
                 .mapToInt(w -> w.getId()).boxed().toList();
 
-        answerRepository.deleteAllById(Ids);
+        answerRepository.deleteAllById(ids);
     }
 
     public List<Answer> getAnswers(int eventId) {

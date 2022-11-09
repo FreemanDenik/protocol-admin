@@ -48,7 +48,8 @@ public class Answer {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TEMP_CLOSE_CATEGORIES")
     private Set<Integer> closeCategories;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "event_id", nullable = false)
+    @ManyToOne (optional=false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
     private Event event;
+
 }

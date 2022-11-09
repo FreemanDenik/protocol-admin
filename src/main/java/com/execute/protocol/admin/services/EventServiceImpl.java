@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService{
@@ -24,15 +25,18 @@ public class EventServiceImpl implements EventService{
      * Сохранить событие
       * @param event сущность событие
      */
-    @Transactional
+    //@Transactional
     public void save(Event event){
-        eventRepository.save(event);
+
         List<Answer> answer = event.getAnswers();
+
         answer.forEach(e -> {
             e.setEvent(event);
         });
 
-        answerRepository.saveAll(answer);
+        eventRepository.save(event);
+       // answerRepository.saveAll(answer);
+
     }
     public Event getEvent(int id){
        return eventRepository.findById(id).get();

@@ -23,7 +23,7 @@ public class CategoryTranslator {
 //    }
 
 
-   /* public List<Answer> updateAnswerFromDto(List<AnswerDto> answerDtos, Event event) {
+   /* public Answer updateAnswerFromDto(AnswerDto answerDtos) {
         List<Answer> result = new ArrayList<>();
         AnswerMapper.INSTANCE.updateAnswerFromDto(answerDtos, result);
         result.forEach(w->w.setEvent(event));

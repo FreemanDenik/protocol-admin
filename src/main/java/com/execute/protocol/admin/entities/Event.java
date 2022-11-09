@@ -37,6 +37,11 @@ public class Event {
     private LocalDateTime updateTime;
     @Column
     @NotNull
-    @OneToMany(mappedBy = "event", fetch = FetchType.EAGER, targetEntity = Answer.class)
+    @OneToMany(
+            mappedBy = "event",
+            fetch = FetchType.EAGER,
+            targetEntity = Answer.class,
+            orphanRemoval = true,
+            cascade= {CascadeType.ALL})
     private List<Answer> answers;
 }
