@@ -7,16 +7,18 @@ import com.execute.protocol.admin.services.CategoryService;
 import com.execute.protocol.admin.services.EventService;
 import com.execute.protocol.dto.AnswerDto;
 import com.execute.protocol.dto.EventDto;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.Media;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
-@RequestMapping("communication")
+@RequestMapping(value = "communication")
 public class CommunicationController {
     private final CategoryService categoryService;
     private final EventService eventService;
@@ -43,7 +45,7 @@ public class CommunicationController {
      * @param eventId
      * @return View
      */
-    @GetMapping("/event")
+    @GetMapping(value = "/event")
     public String create(ModelMap model, @RequestParam(value = "id", defaultValue = "0") int eventId) {
         Event event;
         if (eventId > 0) {
@@ -72,7 +74,8 @@ public class CommunicationController {
         )));
         model.addAttribute("openCategories", new TreeMap<>(Map.of(
                 1, "Келен незаметно подбрасывает записку",
-                2, "Странник в углу таверны предлагает беседу"
+                2, "Странник в углу таверны предлагает беседу",
+                3, "Странник в углу таверны предлагает беседу"
         )));
         model.addAttribute("closeCategories", new TreeMap<>(Map.of(
                 1, "Стража врывается в таверну",
@@ -88,7 +91,7 @@ public class CommunicationController {
      * @return boolean
      */
     @ResponseBody
-    @PostMapping(value = "/event")
+    @PostMapping(value = "/event", consumes = MediaType.APPLICATION_JSON_VALUE)
     public int create(@RequestBody EventDto eventDto) {
         int eventId = eventDto.getId();
         Event event;

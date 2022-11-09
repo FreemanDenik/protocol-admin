@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
-          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
-            integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js"
-            integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk"
-            crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+    <style>
+        .display-none {
+            display: none;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .action {
+            padding-left: 10px;
+        }
+
+        .btn, .form-control {
+            border-radius: 0;
+        }
+
+        table {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
 <h1>Создание/Редактирование диалога</h1>
@@ -40,9 +56,10 @@
                             <h4>Категория карточки</h4>
                             <hr/>
                             <div>
-                                <select id="category" class="form-control">
+                                <select id="category" class="form-control selectpicker" data-live-search="true">
                                     <option value="0">-- Общая колода --</option>
-                                    <option th:each="i : ${categories}" th:value="${i.getKey()}" th:text="${i.getValue()}"
+                                    <option th:each="i : ${categories}" th:value="${i.getKey()}"
+                                            th:text="${i.getValue()}"
                                             th:selected="${i.getKey() == model.category}"></option>
                                 </select>
                             </div>
@@ -80,7 +97,8 @@
                                     </div>
                                     <!-- Игровые параметры определяющие конец игры -->
 
-                                    <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие конец игры (от -100 до +100)</label>
+                                    <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие
+                                        конец игры (от -100 до +100)</label>
                                     <div>
                                         <table>
                                             <tr>
@@ -93,25 +111,29 @@
                                                 </td>
                                                 <td>
                                                     <label>Репутация</label>
-                                                    <input id="answer-reputation" th:value="${answer.reputation}" type="number" min="-100" max="100"
+                                                    <input id="answer-reputation" th:value="${answer.reputation}"
+                                                           type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Репутация">
                                                 </td>
                                                 <td>
                                                     <label>Влияние</label>
-                                                    <input id="answer-influence" th:value="${answer.influence}" type="number" min="-100" max="100"
+                                                    <input id="answer-influence" th:value="${answer.influence}"
+                                                           type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Влияние">
                                                 </td>
                                                 <td>
                                                     <label>Скрытность</label>
-                                                    <input id="answer-shadow" th:value="${answer.shadow}" type="number" min="-100" max="100"
+                                                    <input id="answer-shadow" th:value="${answer.shadow}" type="number"
+                                                           min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Скрытность">
                                                 </td>
                                                 <td>
                                                     <label>Удача</label>
-                                                    <input id="answer-luck" th:value="${answer.luck}" type="number" min="-100" max="100"
+                                                    <input id="answer-luck" th:value="${answer.luck}" type="number"
+                                                           min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Удача">
                                                 </td>
@@ -121,7 +143,7 @@
                                     <!-- Спец игровые предметы -->
                                     <label>Спец игровые предметы</label>
                                     <div>
-                                        <select id="special-things" class="form-control" th:multiple="true">
+                                        <select id="special-things" class="form-control selectpicker" multiple data-max-options="2">
                                             <option th:each="i : ${specials}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.specials != null ? answer.specials.contains(i.getKey()) : false}"></option>
@@ -133,14 +155,13 @@
                                     <div>
                                         <input id="link-cart" type="hidden" value="0">
                                         <button class="btn btn-warning">
-                                            Сохранить текущую карточку во временной таблице и создать новую
-                                            (привязанную)
+                                            Привязать к ответу новую карточку
                                         </button>
                                     </div>
                                     <!-- Открыть категорию карточек -->
                                     <label>Открыть категорию карточек</label>
                                     <div>
-                                        <select id="open-categories" class="form-control" th:multiple="true">
+                                        <select id="open-categories" class="form-control selectpicker" multiple data-selected-text-format="count > 2">
                                             <option th:each="i : ${openCategories}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.openCategories != null ? answer.openCategories.contains(i.getKey()) : false}"></option>
@@ -150,7 +171,7 @@
                                     <!-- Закрыть категорию карточек -->
                                     <label>Закрыть категорию карточек</label>
                                     <div>
-                                        <select id="close-categories" class="form-control" th:multiple="true">
+                                        <select id="close-categories" class="form-control selectpicker" multiple data-selected-text-format="count > 2">
                                             <option th:each="i : ${closeCategories}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.closeCategories != null ? answer.closeCategories.contains(i.getKey()) : false}"></option>
@@ -187,29 +208,17 @@
     </div>
 </div>
 <br/><br/><br/><br/><br/>
+
+
+
 </body>
 </html>
-<style>
-    .display-none {
-        display: none;
-    }
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-ru_RU.min.js"></script>
 
-    label {
-        font-weight: bold;
-    }
-
-    .action {
-        padding-left: 10px;
-    }
-
-    .btn, .form-control {
-        border-radius: 0;
-    }
-
-    table {
-        width: 100%;
-    }
-</style>
 <script>
     async function save() {
         let event = {

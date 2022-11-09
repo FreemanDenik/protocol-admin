@@ -2,6 +2,7 @@ package com.execute.protocol.admin.entities;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -35,17 +36,17 @@ public class Answer {
     @Column
     private byte luck;
     @Column
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_SPECIALS")
     private Set<Integer> specials;
     @Column
     private int link;
     @Column(name = "open_categories")
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_OPEN_CATEGORIES")
     private Set<Integer> openCategories;
     @Column(name = "close_categories")
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_CLOSE_CATEGORIES")
     private Set<Integer> closeCategories;
     @ManyToOne (optional=false, fetch = FetchType.EAGER)

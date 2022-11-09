@@ -39,6 +39,9 @@ public class EventServiceImpl implements EventService{
 
     }
     public Event getEvent(int id){
+/*        var tt = eventRepository.findById(id).get();
+        tt.setAnswers(uu);
+        return tt;*/
        return eventRepository.findById(id).get();
 
     }

@@ -39,9 +39,9 @@ public class Event {
     @NotNull
     @OneToMany(
             mappedBy = "event",
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             targetEntity = Answer.class,
             orphanRemoval = true,
-            cascade= {CascadeType.ALL})
+            cascade= {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<Answer> answers;
 }
