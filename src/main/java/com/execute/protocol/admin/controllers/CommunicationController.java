@@ -47,8 +47,8 @@ public class CommunicationController {
     public String create(ModelMap model, @RequestParam(value = "id", defaultValue = "0") int eventId) {
         Event event;
         if (eventId > 0) {
-            event = eventService.getEvent(eventId);
-            EventDto eventDto = EventMapper.INSTANCE.mapEventToDto(event);
+            Event event1 = eventService.getEvent(eventId);
+            EventDto eventDto = EventMapper.INSTANCE.mapEventToDto(event1);
             model.addAttribute("model", eventDto);
         } else {
             // Все эти пустые экземпляры создаются для того что бы
@@ -61,15 +61,22 @@ public class CommunicationController {
 
         }
 
-        model.addAttribute("category", new TreeMap<>(Map.of(
+        model.addAttribute("categories", new TreeMap<>(Map.of(
                 1, "Келен незаметно подбрасывает записку",
                 2, "Стража врывается в таверну"
         )));
 
-        model.addAttribute("special", new TreeMap<>(Map.of(
-                0, "-- отсутствие выбора --",
+        model.addAttribute("specials", new TreeMap<>(Map.of(
                 1, "Телохранитель",
                 2, "Мешок золота"
+        )));
+        model.addAttribute("openCategories", new TreeMap<>(Map.of(
+                1, "Келен незаметно подбрасывает записку",
+                2, "Странник в углу таверны предлагает беседу"
+        )));
+        model.addAttribute("closeCategories", new TreeMap<>(Map.of(
+                1, "Стража врывается в таверну",
+                2, "Одна компания пъянных ребят шумит"
         )));
 
         return "communication/event";

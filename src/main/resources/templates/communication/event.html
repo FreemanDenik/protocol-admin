@@ -30,9 +30,9 @@
                             <h4>Многоразовая/Одноразовая карточка</h4>
                             <hr>
                             <div>
-                                <input type="checkbox" id="many-use-cart"
-                                       th:checked="${model.manyUse}">
-                                <span>(отмечена, значит многоразовая, отметки нет, значит одноразовая)</span>
+                                <input type="checkbox" id="use-once-cart"
+                                       th:checked="${model.useOnce}">
+                                <span>(Если отметить то, одноразовая карточка)</span>
                             </div>
                             <br/>
                             <br/>
@@ -42,7 +42,7 @@
                             <div>
                                 <select id="category" class="form-control">
                                     <option value="0">-- Общая колода --</option>
-                                    <option th:each="i : ${category}" th:value="${i.getKey()}" th:text="${i.getValue()}"
+                                    <option th:each="i : ${categories}" th:value="${i.getKey()}" th:text="${i.getValue()}"
                                             th:selected="${i.getKey() == model.category}"></option>
                                 </select>
                             </div>
@@ -68,9 +68,9 @@
                                     <!-- Многоразовый/Одноразовый ответ -->
                                     <label>Многоразовый/Одноразовый ответ</label><br/>
                                     <div>
-                                        <input id="many-use-answer" th:checked="${answer.manyUse}"
+                                        <input id="use-once-answer" th:checked="${answer.useOnce}"
                                                type="checkbox">
-                                        <span>(отмечен, значит многоразовый, отметки нет, значит одноразовый)</span>
+                                        <span>(Если отметить то, одноразовый ответ)</span>
                                     </div>
                                     <br/>
                                     <label>Описание ответа</label>
@@ -79,33 +79,39 @@
                                               placeholder="Описать ответ и(или) действие"></textarea>
                                     </div>
                                     <!-- Игровые параметры определяющие конец игры -->
-                                    <label>Игровые параметры определяющие конец игры</label>
+
+                                    <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие конец игры (от -100 до +100)</label>
                                     <div>
                                         <table>
                                             <tr>
                                                 <td>
+                                                    <label>Золото</label>
                                                     <input id="answer-gold" th:value="${answer.gold}" type="number"
                                                            min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Золото">
                                                 </td>
                                                 <td>
-                                                    <input id="answer-reputation" type="number" min="-100" max="100"
+                                                    <label>Репутация</label>
+                                                    <input id="answer-reputation" th:value="${answer.reputation}" type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Репутация">
                                                 </td>
                                                 <td>
-                                                    <input id="answer-influence" type="number" min="-100" max="100"
+                                                    <label>Влияние</label>
+                                                    <input id="answer-influence" th:value="${answer.influence}" type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Влияние">
                                                 </td>
                                                 <td>
-                                                    <input id="answer-shadow" type="number" min="-100" max="100"
+                                                    <label>Скрытность</label>
+                                                    <input id="answer-shadow" th:value="${answer.shadow}" type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Скрытность">
                                                 </td>
                                                 <td>
-                                                    <input id="answer-luck" type="number" min="-100" max="100"
+                                                    <label>Удача</label>
+                                                    <input id="answer-luck" th:value="${answer.luck}" type="number" min="-100" max="100"
                                                            class="form-control"
                                                            placeholder="Удача">
                                                 </td>
@@ -116,9 +122,9 @@
                                     <label>Спец игровые предметы</label>
                                     <div>
                                         <select id="special-things" class="form-control" th:multiple="true">
-                                            <option th:each="i : ${special}" th:value="${i.getKey()}"
+                                            <option th:each="i : ${specials}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
-                                                    th:selected="${answer.special != null ? answer.special.contains(i.getKey()) : false}"></option>
+                                                    th:selected="${answer.specials != null ? answer.specials.contains(i.getKey()) : false}"></option>
 
                                         </select>
                                     </div>
@@ -135,16 +141,20 @@
                                     <label>Открыть категорию карточек</label>
                                     <div>
                                         <select id="open-categories" class="form-control" th:multiple="true">
-                                            <option value="0" th:selected="true">-- отсутствие действия --</option>
-                                            <option value="111">Стража врывается в таверну</option>
+                                            <option th:each="i : ${openCategories}" th:value="${i.getKey()}"
+                                                    th:text="${i.getValue()}"
+                                                    th:selected="${answer.openCategories != null ? answer.openCategories.contains(i.getKey()) : false}"></option>
+
                                         </select>
                                     </div>
                                     <!-- Закрыть категорию карточек -->
                                     <label>Закрыть категорию карточек</label>
                                     <div>
                                         <select id="close-categories" class="form-control" th:multiple="true">
-                                            <option value="0" th:selected="true">-- отсутствие действия --</option>
-                                            <option value="1111">Келен незаметно подбрасывает записку</option>
+                                            <option th:each="i : ${closeCategories}" th:value="${i.getKey()}"
+                                                    th:text="${i.getValue()}"
+                                                    th:selected="${answer.closeCategories != null ? answer.closeCategories.contains(i.getKey()) : false}"></option>
+
                                         </select>
                                     </div>
                                     <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
@@ -204,7 +214,7 @@
     async function save() {
         let event = {
             id: $('#event-id').val(),
-            manyUse: $('#many-use-cart').is(":checked"),
+            useOnce: $('#use-once-cart').is(":checked"),
             category: $('#category').val(),
             eventText: $('#event-text').val(),
             answers: []
@@ -212,14 +222,14 @@
         $.each($('.action'), function (e, i) {
             event.answers.push({
                 id: $(i).find('#action-id').val(),
-                manyUse: $(i).find('#many-use-answer').is(":checked"),
+                useOnce: $(i).find('#use-once-answer').is(":checked"),
                 answerText: $(i).find('#answer-text').val(),
                 gold: $(i).find('#answer-gold').val(),
                 reputation: $(i).find('#answer-reputation').val(),
                 influence: $(i).find('#answer-influence').val(),
                 shadow: $(i).find('#answer-shadow').val(),
                 luck: $(i).find('#answer-luck').val(),
-                special: $(i).find('#special-things').val(),
+                specials: $(i).find('#special-things').val(),
                 link: $(i).find('#link-cart').val(),
                 openCategories: $(i).find('#open-categories').val(),
                 closeCategories: $(i).find('#close-categories').val()

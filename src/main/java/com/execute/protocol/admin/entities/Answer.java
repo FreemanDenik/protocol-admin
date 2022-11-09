@@ -19,10 +19,10 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
-    @Column
     @NotNull
-    private boolean manyUse;
-    @Column(nullable = false)
+    @Column(name = "use_once")
+    private boolean useOnce;
+    @Column(name = "answer_text", nullable = false)
     private String answerText;
     @Column
     private byte gold;
@@ -37,14 +37,14 @@ public class Answer {
     @Column
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TEMP_SPECIALS")
-    private Set<Integer> special;
+    private Set<Integer> specials;
     @Column
     private int link;
-    @Column
+    @Column(name = "open_categories")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TEMP_OPEN_CATEGORIES")
     private Set<Integer> openCategories;
-    @Column
+    @Column(name = "close_categories")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TEMP_CLOSE_CATEGORIES")
     private Set<Integer> closeCategories;

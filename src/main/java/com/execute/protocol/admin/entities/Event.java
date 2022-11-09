@@ -22,7 +22,7 @@ public class Event {
     @EqualsAndHashCode.Include
     private int id;
     @Column
-    private boolean manyUse;
+    private boolean useOnce;
     @Column
     private int category;
     @Column
