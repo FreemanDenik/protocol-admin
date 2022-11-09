@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -39,9 +40,9 @@ public class Event {
     @NotNull
     @OneToMany(
             mappedBy = "event",
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             targetEntity = Answer.class,
             orphanRemoval = true,
-            cascade= {CascadeType.ALL})
-    private List<Answer> answers;
+            cascade= {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private Set<Answer> answers;
 }
