@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -43,5 +44,5 @@ public class Event {
             targetEntity = Answer.class,
             orphanRemoval = true,
             cascade= {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private List<Answer> answers;
+    private Set<Answer> answers;
 }

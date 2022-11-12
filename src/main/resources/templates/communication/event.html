@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!--    <link rel="stylesheet"-->
+    <!--          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">-->
     <style>
         .display-none {
             display: none;
@@ -39,7 +40,7 @@
                         <div>
                             <h4>ID события</h4>
                             <hr>
-                            <input id="event-id" class="form-control" th:value="${model.id}">
+                            <input id="event-id" class="form-control" th:value="${model.id}" readonly>
                             <br/>
                             <br/>
                             <!-- Многоразовая/Одноразовая -->
@@ -56,12 +57,28 @@
                             <h4>Категория карточки</h4>
                             <hr/>
                             <div>
-                                <select id="category" class="form-control selectpicker" data-live-search="true">
-                                    <option value="0">-- Общая колода --</option>
-                                    <option th:each="i : ${categories}" th:value="${i.getKey()}"
-                                            th:text="${i.getValue()}"
-                                            th:selected="${i.getKey() == model.category}"></option>
-                                </select>
+                                <div>
+                                    <!-- Input ввода поиска категории -->
+                                    <label>Поиск категории</label>
+                                    <button type="button" onclick="modalCategory(this)" class="btn btn-primary" >
+                                        Запустить модальное окно со статическим фоном
+                                    </button>
+                                    <input class="finder-category form-control"
+                                           placeholder="Введите название категории или ее часть">
+                                    <!-- Select отображения найденных категории -->
+                                    <select id="category" class="form-control" size="4">
+                                        <option value="0" th:selected="${category == null}">-- Общая колода --</option>
+                                        <optgroup id="selected-container" th:if="${category != null}" label="Текущая категория">
+                                            <option th:value="${category.id}"
+                                                    th:text="${category.title}"
+                                                    th:selected="true"></option>
+                                        </optgroup>
+                                        <!-- Optgroup контейнер для подгружаемых категории -->
+                                        <optgroup id="load-container" label="Результаты поиска">
+
+                                        </optgroup>
+                                    </select>
+                                </div>
                             </div>
                             <br/>
                             <!-- Событие карточки -->
@@ -79,7 +96,7 @@
                             <th:block th:each="answer, iStat: ${model.answers}">
                                 <div class="action" id="action">
                                     <label>ID действия</label>
-                                    <input id="action-id" th:value="${answer.id}" class="form-control">
+                                    <input id="action-id" th:value="${answer.id}" class="form-control" readonly>
                                     <br/>
                                     <br/>
                                     <!-- Многоразовый/Одноразовый ответ -->
@@ -143,7 +160,8 @@
                                     <!-- Спец игровые предметы -->
                                     <label>Спец игровые предметы</label>
                                     <div>
-                                        <select id="special-things" class="form-control selectpicker" multiple data-max-options="2">
+                                        <select id="special-things" class="form-control" multiple
+                                                data-max-options="2">
                                             <option th:each="i : ${specials}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.specials != null ? answer.specials.contains(i.getKey()) : false}"></option>
@@ -161,17 +179,40 @@
                                     <!-- Открыть категорию карточек -->
                                     <label>Открыть категорию карточек</label>
                                     <div>
-                                        <select id="open-categories" class="form-control selectpicker" multiple data-selected-text-format="count > 2">
-                                            <option th:each="i : ${openCategories}" th:value="${i.getKey()}"
-                                                    th:text="${i.getValue()}"
-                                                    th:selected="${answer.openCategories != null ? answer.openCategories.contains(i.getKey()) : false}"></option>
+                                        <!-- Input ввода поиска категории -->
+                                        <label>Поиск категории</label>
+                                        <input class="finder-category form-control"
+                                               placeholder="Введите название категории или ее часть">
+                                        <!-- Select отображения найденных категории -->
+                                        <select id="open-categories" class="form-control" size="4" multiple>
+                                            <optgroup id="selected-container" label="Текущии категории">
+                                                <option th:each="i : ${answer.openCategories}" th:value="${i.id}"
+                                                        th:text="${i.title}"
+                                                        th:title="${i.description}"
+                                                        th:selected="true"></option>
+                                            </optgroup>
+                                            <!-- Optgroup контейнер для подгружаемых категории -->
+                                            <optgroup id="load-container"
+                                                      label="Результаты поиска">
 
+                                            </optgroup>
                                         </select>
                                     </div>
+<!--                                    <div>-->
+<!--                                        <select id="open-categories" class="form-control" multiple size="3">-->
+
+
+<!--                                            <option th:each="i : ${answer.openCategories}" th:value="${i.id}"-->
+<!--                                                    th:text="${i.title}"-->
+<!--                                                    th:title="${i.description}"-->
+<!--                                                    th:selected="true"></option>-->
+
+<!--                                        </select>-->
+<!--                                    </div>-->
                                     <!-- Закрыть категорию карточек -->
                                     <label>Закрыть категорию карточек</label>
                                     <div>
-                                        <select id="close-categories" class="form-control selectpicker" multiple data-selected-text-format="count > 2">
+                                        <select id="close-categories" class="form-control" multiple size="3">
                                             <option th:each="i : ${closeCategories}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.closeCategories != null ? answer.closeCategories.contains(i.getKey()) : false}"></option>
@@ -181,7 +222,7 @@
                                     <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
                                             onclick='$(this).parent().remove()'>Удалить ответ
                                     </button>
-                                    <hr style="background: 1px grey"/>
+                                    <hr style="background: 1px lightgrey"/>
                                 </div>
                             </th:block>
                             <button id="action-add-button" onclick="add()" class="btn btn-primary">Добавить ответ
@@ -208,18 +249,95 @@
     </div>
 </div>
 <br/><br/><br/><br/><br/>
+<!-- Модальное окно -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Заголовок модального окна</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <input class="finder-category form-control"
+                       placeholder="Введите название категории или ее часть">
+                <!-- Select отображения найденных категории -->
+                <select id="category" class="form-control" size="4">
+                    <option value="0" th:selected="${category == null}">-- Общая колода --</option>
+                    <optgroup id="selected-container" th:if="${category != null}" label="Текущая категория">
+                        <option th:value="${category.id}"
+                                th:text="${category.title}"
+                                th:selected="true"></option>
+                    </optgroup>
+                    <!-- Optgroup контейнер для подгружаемых категории -->
+                    <optgroup id="load-container" label="Результаты поиска">
 
-
+                    </optgroup>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary">Понял</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-ru_RU.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"-->
+<!--        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"-->
+<!--        crossorigin="anonymous"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-ru_RU.min.js"></script>-->
 
 <script>
+    function modalCategory(obj){
+
+        $("#staticBackdrop").modal('show');
+    }
+    $(function () {
+
+        $('.finder-category').on('keyup', async function () {
+            let search = $(this).val();
+            let finder = $(this);
+            let select = finder.siblings('select');
+            // Получаем контейнер optgroup куда и вставляется options
+            let loadContainer = finder.siblings('select').children('optgroup#load-container');
+            let excludesId = [];
+            finder.siblings('select').children('#selected-container').find('option').each(function (e, i){
+                console.log(e,i);
+                excludesId.push($(i).val());
+            });
+            console.log(excludesId);
+            // Пропускает поиск только если больше 2 символов
+            if (search.length < 2) return;
+            // Отправка поисковой строки (частичный поиск)
+            let send = {
+                search: search,
+                excludes: excludesId
+            }
+            let data = await fetch('/communication/category', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(send)
+            });
+            let jsonCategories = await data.json();
+            loadContainer.empty();
+            let size = 4;
+            $.each(jsonCategories, function (num, category) {
+                loadContainer.append('<option value="' + category.id + '" title="'+category.description+'">' + category.title + '</option>');
+                size++;
+            });
+            select.attr('size', size);
+        })
+    })
+
     async function save() {
         let event = {
             id: $('#event-id').val(),
@@ -228,23 +346,31 @@
             eventText: $('#event-text').val(),
             answers: []
         }
-        $.each($('.action'), function (e, i) {
+        $.each($('.action'), function (actionNum, action) {
+            let openCategories = [];
+            console.log($(action).find('#open-categories').val());
+            $.each($(action).find('#open-categories').val(), function (openCategoryNum, openCategoryId) {
+                console.log(111 , openCategoryId);
+                openCategories.push({
+                    id: openCategoryId
+                })
+            })
             event.answers.push({
-                id: $(i).find('#action-id').val(),
-                useOnce: $(i).find('#use-once-answer').is(":checked"),
-                answerText: $(i).find('#answer-text').val(),
-                gold: $(i).find('#answer-gold').val(),
-                reputation: $(i).find('#answer-reputation').val(),
-                influence: $(i).find('#answer-influence').val(),
-                shadow: $(i).find('#answer-shadow').val(),
-                luck: $(i).find('#answer-luck').val(),
-                specials: $(i).find('#special-things').val(),
-                link: $(i).find('#link-cart').val(),
-                openCategories: $(i).find('#open-categories').val(),
-                closeCategories: $(i).find('#close-categories').val()
+                id: $(action).find('#action-id').val(),
+                useOnce: $(action).find('#use-once-answer').is(":checked"),
+                answerText: $(action).find('#answer-text').val(),
+                gold: $(action).find('#answer-gold').val(),
+                reputation: $(action).find('#answer-reputation').val(),
+                influence: $(action).find('#answer-influence').val(),
+                shadow: $(action).find('#answer-shadow').val(),
+                luck: $(action).find('#answer-luck').val(),
+                specials: $(action).find('#special-things').val(),
+                link: $(action).find('#link-cart').val(),
+                openCategories: openCategories,
+                closeCategories: $(action).find('#close-categories').val()
             })
         })
-        console.log(event);
+        // console.log(event);
 
         let data = await fetch('/communication/event', {
             method: 'post',
@@ -256,15 +382,6 @@
         if (data.status == 200) {
             let eventId = await data.json();
             location.href = '/communication/event?id=' + eventId;
-            // $.each(json.answers, function (e,i){
-            //     console.log($('textarea[value="'+i.answerText+'"]'));
-            //     console.log($('textarea[text="'+i.answerText+'"]'));
-            //     console.log($('textarea[val="'+i.answerText+'"]'));
-            //     console.log($('textarea[html="'+i.answerText+'"]'));
-            //     $('textarea[value="'+i.answerText+'"]')
-            //         .closest('#action')
-            //         .find('#action-id').remove();
-            // })
         }
     }
 
@@ -276,6 +393,28 @@
         eventContainer.find('#save-and-edit-button').before(action);
     }
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <div class="container">

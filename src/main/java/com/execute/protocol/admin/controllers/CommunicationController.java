@@ -1,18 +1,25 @@
 package com.execute.protocol.admin.controllers;
 
+import com.execute.protocol.admin.entities.Category;
 import com.execute.protocol.admin.entities.Event;
+import com.execute.protocol.admin.entities.QCategory;
+import com.execute.protocol.admin.mappers.CategoryMapper;
 import com.execute.protocol.admin.mappers.EventMapper;
+import com.execute.protocol.admin.repositories.CategoryRepository;
 import com.execute.protocol.admin.services.AnswerService;
 import com.execute.protocol.admin.services.CategoryService;
 import com.execute.protocol.admin.services.EventService;
 import com.execute.protocol.dto.AnswerDto;
+import com.execute.protocol.dto.CategoryDto;
+import com.execute.protocol.dto.CategoryFastFinerDto;
 import com.execute.protocol.dto.EventDto;
+import com.querydsl.core.BooleanBuilder;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.Media;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -21,13 +28,17 @@ import java.util.*;
 @RequestMapping(value = "communication")
 public class CommunicationController {
     private final CategoryService categoryService;
+    private final CategoryRepository repository;
     private final EventService eventService;
     private final AnswerService answerService;
 
-    public CommunicationController(CategoryService categoryService, EventService eventService, AnswerService answerService) {
+    private final EventMapper eventMapper;
+    public CommunicationController(CategoryService categoryService, CategoryRepository repository, EventService eventService, AnswerService answerService, EventMapper eventMapper) {
         this.categoryService = categoryService;
+        this.repository = repository;
         this.eventService = eventService;
         this.answerService = answerService;
+        this.eventMapper = eventMapper;
     }
 
     /**
@@ -41,32 +52,30 @@ public class CommunicationController {
 
     /**
      * GET Отображение пустой/заполненной формы создания/изменения события
+     *
      * @param model
      * @param eventId
      * @return View
      */
     @GetMapping(value = "/event")
     public String create(ModelMap model, @RequestParam(value = "id", defaultValue = "0") int eventId) {
-        Event event;
+        EventDto eventDto;
         if (eventId > 0) {
-            Event event1 = eventService.getEvent(eventId);
-            EventDto eventDto = EventMapper.INSTANCE.mapEventToDto(event1);
-            model.addAttribute("model", eventDto);
+            Event event = eventService.getEvent(eventId);
+
+            eventDto = eventMapper.mapEventToDto(event);
         } else {
             // Все эти пустые экземпляры создаются для того что бы
             // можно было использовать thymeleaf и проверять значения на NULL
-            EventDto emptyEventDto = new EventDto();
+            eventDto = new EventDto();
             // Так же пустая модель AnswerDto создается чтобы одна запись всегда была
-            List<AnswerDto> answersDto = new ArrayList<>(Arrays.asList(new AnswerDto()));
-            emptyEventDto.setAnswers(answersDto);
-            model.addAttribute("model", emptyEventDto);
-
+            Set<AnswerDto> answersDto = Set.of(new AnswerDto());
+            eventDto.setAnswers(answersDto);
         }
 
-        model.addAttribute("categories", new TreeMap<>(Map.of(
-                1, "Келен незаметно подбрасывает записку",
-                2, "Стража врывается в таверну"
-        )));
+        model.addAttribute("model", eventDto);
+        model.addAttribute("category",
+                CategoryMapper.INSTANCE.mapCategoryToDto(categoryService.getCategoryById(eventDto.getCategory())));
 
         model.addAttribute("specials", new TreeMap<>(Map.of(
                 1, "Телохранитель",
@@ -84,9 +93,32 @@ public class CommunicationController {
 
         return "communication/event";
     }
+    /**
+     * Контроллер получения категории по части названия
+     * @param fastFinerDto - краткие сведения по быстрому поиску и исключению
+     * @return List CategoryDto
+     */
+    @ResponseBody
+    @PostMapping(value = "/category")
+    public Set<CategoryDto> category(@RequestBody CategoryFastFinerDto fastFinerDto) {
+        QCategory qCategory = QCategory.category;
+        BooleanBuilder predicates = new BooleanBuilder();
+        Optional.ofNullable(fastFinerDto.getSearch())
+                .map(qCategory.title::contains).map(predicates::and);
+
+        Optional.ofNullable(fastFinerDto.getExcludes())
+                .map(qCategory.id::in).map(w->predicates.andNot(w));
+
+        var tt = repository.findAll(predicates, PageRequest.of(0, 2));
+        // Получаем список категории по части названия
+        Set<Category> categories = categoryService.getCategoriesBySearchAndWithExcludes(fastFinerDto.getSearch(), fastFinerDto.getExcludes());
+        // Преобразуем список категории в Dto список
+        //return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(categories);
+        return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(tt.toSet());
+    }
 
     /**
-     * POST Создание/Изменение
+     * POST Создание/Изменение события
      * @param eventDto
      * @return boolean
      */
@@ -97,18 +129,19 @@ public class CommunicationController {
         Event event;
         // Создание события
         if (eventId == 0) {
-            event = EventMapper.INSTANCE.mapEventFromDto(eventDto);
-            event.setUpdateTime(LocalDateTime.now());
-        // Изменение события
+            event = eventMapper.mapEventFromDto(eventDto);
+            // Задаем время создания
+            event.setCreateTime(LocalDateTime.now());
         } else {
             event = eventService.getEvent(eventId);
             // Удаление из Event.Answer записей которых нет в EventDto.AnswerDto
             // метод deleteAnswersInDtoDifferent использовать до Mapper преобразовании
             answerService.deleteAnswersInDtoDifferent(eventDto.getAnswers(), event.getAnswers());
-            // Преобразовываем eventDto в event
-            EventMapper.INSTANCE.updateEventFromDto(eventDto, event);
+            // Обновляем event данными из eventDto
+            eventMapper.mapUpdateEventFromDto(eventDto, event);
         }
-        event.setCreateTime(LocalDateTime.now());
+        // Задаем время изменения
+        event.setUpdateTime(LocalDateTime.now());
         eventService.save(event);
         return event.getId();
     }

@@ -94,6 +94,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- Mapstruct MAPPER  -->
         <dependency>
@@ -105,6 +106,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <!--   Querydsl    -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>5.0.0.M1</version>
         </dependency>
     </dependencies>
 
@@ -153,7 +167,30 @@
                             <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                    <!--     Внеднерние зависимсти на все mapstruct    -->
+                    <!--                    <compilerArgs>-->
+                    <!--                        <compilerArg>-->
+                    <!--                            -Amapstruct.defaultComponentModel=spring-->
+                    <!--                        </compilerArg>-->
+                    <!--                    </compilerArgs>-->
                 </configuration>
+            </plugin>
+            <!--            -->
+            <plugin>
+                <groupId>com.mysema.maven</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.1.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/generated-sources/java</outputDirectory>
+                            <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

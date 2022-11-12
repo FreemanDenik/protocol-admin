@@ -1,6 +1,7 @@
 package com.execute.protocol.admin.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.querydsl.core.annotations.QueryEntity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -10,6 +11,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 @SuperBuilder
+@QueryEntity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "TEMP_CATEGORIES")
@@ -23,6 +26,4 @@ public class Category {
     private String title;
     @Column
     private String description;
-//    @OneToOne(mappedBy = "category", fetch = FetchType.LAZY)
-//    private Event event;
 }
