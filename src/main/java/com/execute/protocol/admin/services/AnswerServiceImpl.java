@@ -35,7 +35,7 @@ public class AnswerServiceImpl implements AnswerService {
      * @param answers
      */
 
-    public void deleteAnswersInDtoDifferent(List<AnswerDto> answersDto, List<Answer> answers) {
+    public void deleteAnswersInDtoDifferent(Set<AnswerDto> answersDto, Set<Answer> answers) {
         List<Integer> dtoIds = answersDto.stream().mapToInt(w -> w.getId()).boxed().toList();
         List<Integer> ids = answers.stream().filter(w -> !dtoIds.contains(w.getId()))
                 .mapToInt(w -> w.getId()).boxed().toList();
@@ -43,7 +43,7 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.deleteAllById(ids);
     }
 
-    public List<Answer> getAnswers(int eventId) {
+    public Set<Answer> getAnswers(int eventId) {
         return answerRepository.findByEventId(eventId);
     }
 }

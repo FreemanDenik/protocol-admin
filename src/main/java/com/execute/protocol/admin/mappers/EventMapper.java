@@ -6,14 +6,38 @@ import com.execute.protocol.dto.EventDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring", uses = CategoryTranslator.class)
+/**
+ * Преобразователь класс Event<br>
+ * Для выполнения таких преобразований как mapEventToDto,<br>
+ * необходимо данный интерфейс использовать через внедрение зависимости<br>
+ * т.е. в процессе работы подтягиваются данные из БД
+ */
+@Mapper(componentModel = "spring",
+        //injectionStrategy = InjectionStrategy.FIELD,
+
+        uses = EventTranslator.class)
 public interface EventMapper {
-    EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
+    //EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
+
+    /**
+     * Преобразуем Event в EventDto<br>
+     * Данное преобразование использовать только объявив<br> {@link EventMapper} через внедрение зависимости
+     * @param event {@link Event}
+     * @return {@link EventDto}
+     */
     EventDto mapEventToDto(Event event);
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "answers", target = "answers")
+    /**
+     * Преобразуем EventDto в Event
+     * @param eventDto {@link EventDto}
+     * @return {@link Event}
+     */
     Event mapEventFromDto(EventDto eventDto);
 
+    /**
+     * Обновляет Event данными их EventDto
+     * @param eventDto {@link EventDto}
+     * @param event {@link Event}
+     */
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEventFromDto(EventDto eventDto, @MappingTarget Event event);
+    void mapUpdateEventFromDto(EventDto eventDto, @MappingTarget Event event);
 }

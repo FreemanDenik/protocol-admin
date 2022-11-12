@@ -9,5 +9,5 @@ import java.util.Set;
 
 @Repository
 public interface AnswerRepository extends JpaRepository<Answer, Integer> {
-    List<Answer> findByEventId(int eventId);
+    Set<Answer> findByEventId(int eventId);
 }
