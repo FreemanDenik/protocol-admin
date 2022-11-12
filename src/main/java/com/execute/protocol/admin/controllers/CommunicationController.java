@@ -14,6 +14,7 @@ import com.execute.protocol.dto.CategoryDto;
 import com.execute.protocol.dto.CategoryFastFinerDto;
 import com.execute.protocol.dto.EventDto;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -74,23 +75,10 @@ public class CommunicationController {
         }
 
         model.addAttribute("model", eventDto);
-        model.addAttribute("category",
-                CategoryMapper.INSTANCE.mapCategoryToDto(categoryService.getCategoryById(eventDto.getCategory())));
-
         model.addAttribute("specials", new TreeMap<>(Map.of(
                 1, "Телохранитель",
                 2, "Мешок золота"
         )));
-        model.addAttribute("openCategories", new TreeMap<>(Map.of(
-                1, "Келен незаметно подбрасывает записку",
-                2, "Странник в углу таверны предлагает беседу",
-                3, "Странник в углу таверны предлагает беседу"
-        )));
-        model.addAttribute("closeCategories", new TreeMap<>(Map.of(
-                1, "Стража врывается в таверну",
-                2, "Одна компания пъянных ребят шумит"
-        )));
-
         return "communication/event";
     }
     /**
@@ -101,20 +89,21 @@ public class CommunicationController {
     @ResponseBody
     @PostMapping(value = "/category")
     public Set<CategoryDto> category(@RequestBody CategoryFastFinerDto fastFinerDto) {
+        int page = 0;
+        int pageSize = 2;
         QCategory qCategory = QCategory.category;
+
         BooleanBuilder predicates = new BooleanBuilder();
+
         Optional.ofNullable(fastFinerDto.getSearch())
                 .map(qCategory.title::contains).map(predicates::and);
 
         Optional.ofNullable(fastFinerDto.getExcludes())
                 .map(qCategory.id::in).map(w->predicates.andNot(w));
 
-        var tt = repository.findAll(predicates, PageRequest.of(0, 2));
-        // Получаем список категории по части названия
-        Set<Category> categories = categoryService.getCategoriesBySearchAndWithExcludes(fastFinerDto.getSearch(), fastFinerDto.getExcludes());
+        Page<Category> pageCategories = categoryService.getCategoriesBySearchAndWithExcludes(predicates, PageRequest.of(page, pageSize));
         // Преобразуем список категории в Dto список
-        //return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(categories);
-        return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(tt.toSet());
+        return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(pageCategories.toSet());
     }
 
     /**
@@ -123,7 +112,7 @@ public class CommunicationController {
      * @return boolean
      */
     @ResponseBody
-    @PostMapping(value = "/event", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/event")
     public int create(@RequestBody EventDto eventDto) {
         int eventId = eventDto.getId();
         Event event;

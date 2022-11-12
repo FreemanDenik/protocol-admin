@@ -5,6 +5,8 @@ import com.execute.protocol.admin.repositories.CategoryRepository;
 import com.execute.protocol.dto.CategoryDto;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -31,19 +33,22 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
         return category;
     }
+
     /**
      * Получаем результаты по поиску части названия (contains)
-     * @param search - часть названия
-     * @return List Category
+     * а так отфильтровываем уже существующие и пагинируем ответ
+     * @param predicates BooleanBuilder
+     * @param pade PageRequest
+     * @return Page Category
      */
-    public Set<Category> getCategoriesBySearchAndWithExcludes(String search, Set<Integer> excludesId){
+    public Page<Category> getCategoriesBySearchAndWithExcludes(BooleanBuilder predicates, PageRequest pade){
 
 
-        return categoryRepository.findByTitleContainsAndIdNotIn(search, excludesId);
+        return categoryRepository.findAll(predicates, pade);
     }
     /**
      * Получаем категорию по id
-     * @param categoryId - id
+     * @param categoryId id
      * @return Category
      */
     public Category getCategoryById(int categoryId){

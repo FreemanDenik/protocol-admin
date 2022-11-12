@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <!--    <link rel="stylesheet"-->
     <!--          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">-->
     <style>
@@ -60,22 +61,28 @@
                                 <div>
                                     <!-- Input ввода поиска категории -->
                                     <label>Поиск категории</label>
-                                    <button type="button" onclick="modalCategory(this)" class="btn btn-primary" >
+                                    <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                         Запустить модальное окно со статическим фоном
                                     </button>
-                                    <input class="finder-category form-control"
-                                           placeholder="Введите название категории или ее часть">
+                                    <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                        x
+                                    </button>
                                     <!-- Select отображения найденных категории -->
-                                    <select id="category" class="form-control" size="4">
-                                        <option value="0" th:selected="${category == null}">-- Общая колода --</option>
-                                        <optgroup id="selected-container" th:if="${category != null}" label="Текущая категория">
-                                            <option th:value="${category.id}"
-                                                    th:text="${category.title}"
-                                                    th:selected="true"></option>
+                                    <select id="category" class="form-control" size="6">
+                                        <optgroup
+                                                label="Дефолт">
+                                            <option value="0" th:selected="${model.category == null}">
+                                                -- Общая категория--
+                                            </option>
                                         </optgroup>
-                                        <!-- Optgroup контейнер для подгружаемых категории -->
-                                        <optgroup id="load-container" label="Результаты поиска">
-
+                                        <optgroup id="current-container"
+                                                  label="Текущая категория">
+                                            <option th:if="${model.category != null}" th:value="${model.category.id}"
+                                                    th:text="${model.category.title}"
+                                                    th:title="${model.category.description}" selected></option>
+                                        </optgroup>
+                                        <optgroup id="checked-container"
+                                                  label="Выбранная категория">
                                         </optgroup>
                                     </select>
                                 </div>
@@ -113,7 +120,6 @@
                                               placeholder="Описать ответ и(или) действие"></textarea>
                                     </div>
                                     <!-- Игровые параметры определяющие конец игры -->
-
                                     <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие
                                         конец игры (от -100 до +100)</label>
                                     <div>
@@ -165,7 +171,6 @@
                                             <option th:each="i : ${specials}" th:value="${i.getKey()}"
                                                     th:text="${i.getValue()}"
                                                     th:selected="${answer.specials != null ? answer.specials.contains(i.getKey()) : false}"></option>
-
                                         </select>
                                     </div>
                                     <!-- Привязка карточки -->
@@ -181,42 +186,50 @@
                                     <div>
                                         <!-- Input ввода поиска категории -->
                                         <label>Поиск категории</label>
-                                        <input class="finder-category form-control"
-                                               placeholder="Введите название категории или ее часть">
+                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                            Запустить модальное окно со статическим фоном
+                                        </button>
+                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                            x
+                                        </button>
                                         <!-- Select отображения найденных категории -->
-                                        <select id="open-categories" class="form-control" size="4" multiple>
-                                            <optgroup id="selected-container" label="Текущии категории">
-                                                <option th:each="i : ${answer.openCategories}" th:value="${i.id}"
+                                        <select id="open-categories" class="form-control" multiple size="6">
+                                            <optgroup id="current-container"
+                                                      label="Текущие категории">
+                                                <option th:each="i : ${answer.openCategories}"
+                                                        th:value="${i.id}"
                                                         th:text="${i.title}"
                                                         th:title="${i.description}"
                                                         th:selected="true"></option>
                                             </optgroup>
-                                            <!-- Optgroup контейнер для подгружаемых категории -->
-                                            <optgroup id="load-container"
-                                                      label="Результаты поиска">
-
+                                            <optgroup id="checked-container"
+                                                      label="Выбранные категории">
                                             </optgroup>
                                         </select>
                                     </div>
-<!--                                    <div>-->
-<!--                                        <select id="open-categories" class="form-control" multiple size="3">-->
-
-
-<!--                                            <option th:each="i : ${answer.openCategories}" th:value="${i.id}"-->
-<!--                                                    th:text="${i.title}"-->
-<!--                                                    th:title="${i.description}"-->
-<!--                                                    th:selected="true"></option>-->
-
-<!--                                        </select>-->
-<!--                                    </div>-->
-                                    <!-- Закрыть категорию карточек -->
                                     <label>Закрыть категорию карточек</label>
                                     <div>
-                                        <select id="close-categories" class="form-control" multiple size="3">
-                                            <option th:each="i : ${closeCategories}" th:value="${i.getKey()}"
-                                                    th:text="${i.getValue()}"
-                                                    th:selected="${answer.closeCategories != null ? answer.closeCategories.contains(i.getKey()) : false}"></option>
-
+                                        <!-- Input ввода поиска категории -->
+                                        <label>Поиск категории</label>
+                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                            Запустить модальное окно со статическим фоном
+                                        </button>
+                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                            x
+                                        </button>
+                                        <!-- Select отображения найденных категории -->
+                                        <select id="close-categories" class="form-control" multiple size="6">
+                                            <optgroup id="current-container"
+                                                      label="Текущие категории">
+                                                <option th:each="i : ${answer.closeCategories}"
+                                                        th:value="${i.id}"
+                                                        th:text="${i.title}"
+                                                        th:title="${i.description}"
+                                                        th:selected="true"></option>
+                                            </optgroup>
+                                            <optgroup id="checked-container"
+                                                      label="Выбранные категории">
+                                            </optgroup>
                                         </select>
                                     </div>
                                     <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
@@ -232,10 +245,6 @@
                             <button id="save-and-edit-button" onclick="save()" class="btn btn-success">Сохранить и
                                 редактировать
                             </button>
-                            <!--                            |-->
-                            <!--                            <button id="save-and-new-button" onclick="save()" class="btn btn-success">Сохранить и-->
-                            <!--                                создать новое событие-->
-                            <!--                            </button>-->
                         </div>
                     </div>
                 </td>
@@ -249,34 +258,33 @@
     </div>
 </div>
 <br/><br/><br/><br/><br/>
-<!-- Модальное окно -->
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<!-- Модальное окно категории -->
+<div class="modal fade" id="categoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="staticBackdropLabel">Заголовок модального окна</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
+            <select class="form-control" size="4" multiple>
+                <!-- Контейнер текущих категории -->
+                <optgroup id="current-container" label="Текущие категории">
+                </optgroup>
+                <!-- Контейнер для отмеченных категории -->
+                <optgroup id="checked-container" label="Отмеченные">
+                </optgroup>
+            </select>
             <div class="modal-body">
-                <input class="finder-category form-control"
+                <!-- Поисковое поле, через которое производится поиск и подгрузка категории из бд -->
+                <input id="finder-category" class="form-control"
                        placeholder="Введите название категории или ее часть">
-                <!-- Select отображения найденных категории -->
-                <select id="category" class="form-control" size="4">
-                    <option value="0" th:selected="${category == null}">-- Общая колода --</option>
-                    <optgroup id="selected-container" th:if="${category != null}" label="Текущая категория">
-                        <option th:value="${category.id}"
-                                th:text="${category.title}"
-                                th:selected="true"></option>
-                    </optgroup>
-                    <!-- Optgroup контейнер для подгружаемых категории -->
-                    <optgroup id="load-container" label="Результаты поиска">
-
-                    </optgroup>
-                </select>
+                <!-- Контейнер для подгружаемых категории  -->
+                <table id="load-category-container" class="table"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button type="button" class="btn btn-primary">Понял</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                <button type="button" class="btn btn-primary" onclick="saveSelectedInEvent(this)">Принять</button>
             </div>
         </div>
     </div>
@@ -290,69 +298,157 @@
 <!--<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"-->
 <!--        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"-->
 <!--        crossorigin="anonymous"></script>-->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>-->
 <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-ru_RU.min.js"></script>-->
 
 <script>
-    function modalCategory(obj){
+    let TRIGGER_MODAL_BUTTON;
 
-        $("#staticBackdrop").modal('show');
+    // Сохранения выбранных пунктов в модальном окне на карту события
+    function saveSelectedInEvent(obj) {
+        // Получаем контейнер текущих категории карты события
+        let checkedContainer = TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#checked-container');
+        checkedContainer.empty();
+        // Отменяем выбор всех элементов категории на карте события
+        TRIGGER_MODAL_BUTTON.siblings('select').find('option').prop('selected', false);
+        // Перебираем контейнер выбранных элементов модального окна и клонируем их в
+        // контейнер выбранных элементов карты события
+        $(obj).closest('.modal-content').find('select optgroup[id=checked-container] option').each(function (e, i) {
+            // клонируем
+            let option = $(i).clone();
+            // Добавляемые элементы отмечаем как selected
+            option.prop('selected', true);
+            // Добавляем элементы в контейнер выбранных элементов карты события
+            checkedContainer.append(option);
+        })
+        // Закрываем модальное окно
+        $('#categoryModal').modal('hide');
     }
-    $(function () {
 
-        $('.finder-category').on('keyup', async function () {
+    function cleanModal(button) {
+        $(button).siblings('select').children('optgroup#checked-container').empty();
+    }
+
+    // Открывает модальное окно и выполняет все сопутствующие события
+    function showModal(button) {
+        // Получам триггер кнопку
+        TRIGGER_MODAL_BUTTON = $(button);
+        // Получаем контейнер текущих элементов модального окна
+        let modalСurrent = $('#categoryModal').find('select').children('optgroup#current-container');
+        modalСurrent.empty();
+        // Перебираем текущие элементы карты события и клонируем их
+        // в контейнер текущих элементов модального окна
+        TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container').children('option').each(function (e, i) {
+            modalСurrent.append($(i).clone());
+        });
+        // Открываем модальное окно
+        $('#categoryModal').modal('show');
+    }
+
+    $(function () {
+        $('#finder-category').on('keyup', async function () {
+            // название категории или ее часть (для поиска)
             let search = $(this).val();
-            let finder = $(this);
-            let select = finder.siblings('select');
-            // Получаем контейнер optgroup куда и вставляется options
-            let loadContainer = finder.siblings('select').children('optgroup#load-container');
-            let excludesId = [];
-            finder.siblings('select').children('#selected-container').find('option').each(function (e, i){
-                console.log(e,i);
-                excludesId.push($(i).val());
+            let modalSelect = $(this).siblings('select');
+            // Контейнер в модальном окне куда загружаются по поиску категории с сервера
+            let loadContainer = $(this).siblings('table#load-category-container');
+            // Массив исключающих категории, в которых событие уже состоит (чтобы их не было в результатах поиска)
+            let excludes = [];
+            // Проверка select на атрибут multiple, от этого зависит сколько option можно добавить
+            // (если true то сколько угодно, если false то только 1)
+            let isMultiply = TRIGGER_MODAL_BUTTON.siblings('select').attr('multiple') !== undefined;
+            // Массив исключений формируется из select текущих категории (options)
+            TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container').children('option').each(function (e, i) {
+                excludes.push($(i).val());
             });
-            console.log(excludesId);
-            // Пропускает поиск только если больше 2 символов
-            if (search.length < 2) return;
-            // Отправка поисковой строки (частичный поиск)
-            let send = {
-                search: search,
-                excludes: excludesId
-            }
-            let data = await fetch('/communication/category', {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(send)
-            });
-            let jsonCategories = await data.json();
+            // Очищаем контейнер загрузки для новых результатов
             loadContainer.empty();
-            let size = 4;
-            $.each(jsonCategories, function (num, category) {
-                loadContainer.append('<option value="' + category.id + '" title="'+category.description+'">' + category.title + '</option>');
-                size++;
-            });
-            select.attr('size', size);
+            // Пропускает поиск только если 0 (10-20 последних результатов) или больше 2 символов
+            if (search.length == 0 || search.length > 1) {
+                // Формируем отправляемые данные
+                // Поисковая строка и массив исключении
+                let send = {
+                    search: search,
+                    excludes: excludes
+                }
+                // Отправка данных
+                let data = await fetch('/communication/category', {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(send)
+                });
+                // Получаем результат массив категории
+                let jsonCategories = await data.json();
+                // Перебираем массив категории и вствляем их в loadContainer
+                $.each(jsonCategories, function (num, category) {
+                    let tr = $("<tr/>");
+                    $("<td/>", {text: category.id}).appendTo(tr);
+                    $("<td/>").append(
+                        $("<a/>", {
+                            href: "#",
+                            text: category.title,
+                            // Добавление удаление категории в select'ах
+                            click: function () {
+                                checkCategory(this, category, isMultiply);
+                                return false;
+                            }
+                        })).appendTo(tr)
+                    $("<td/>", {text: category.description}).appendTo(tr);
+                    loadContainer.append(tr);
+                });
+            }
         })
     })
+
+    // Метод выбора из коллекции подгружаемых элементов
+    function checkCategory(obj, category, isMultiply) {
+        // Получаем контейнер выбранных элементов модального окна
+        let checkedContainer = $(obj).closest('div.modal-content').find('optgroup#checked-container');
+        let options = [];
+        // Заполняем массив option элементами
+        checkedContainer.find('option').each(function (e, i) {
+            options.push($(i));
+        });
+        // Проверяем является ли текущий select multiple или нет
+        if (isMultiply) {
+            // Если текущий select является multiple, то выбор у него многообразный с возможностью удалять/добавлять
+            if (options.find(e => e.val() == category.id)) {
+                checkedContainer.children('option[value=' + category.id + ']').remove();
+            } else {
+                checkedContainer.append('<option value="' + category.id + '" title="' + category.description + '">' + category.id + '. ' + category.title + '</option>');
+            }
+        } else {
+            // Если текущий select не является multiple, то выбор только один
+            checkedContainer.html('<option value="' + category.id + '" title="' + category.description + '">' + category.id + '. ' + category.title + '</option>');
+        }
+    }
 
     async function save() {
         let event = {
             id: $('#event-id').val(),
             useOnce: $('#use-once-cart').is(":checked"),
-            category: $('#category').val(),
+            category: {
+                id: $('#category').val()
+            },
             eventText: $('#event-text').val(),
             answers: []
         }
         $.each($('.action'), function (actionNum, action) {
             let openCategories = [];
-            console.log($(action).find('#open-categories').val());
             $.each($(action).find('#open-categories').val(), function (openCategoryNum, openCategoryId) {
-                console.log(111 , openCategoryId);
                 openCategories.push({
                     id: openCategoryId
+                })
+            })
+            let closeCategories = [];
+            $.each($(action).find('#close-categories').val(), function (closeCategoryNum, closeCategoryId) {
+                closeCategories.push({
+                    id: closeCategoryId
                 })
             })
             event.answers.push({
@@ -367,10 +463,10 @@
                 specials: $(action).find('#special-things').val(),
                 link: $(action).find('#link-cart').val(),
                 openCategories: openCategories,
-                closeCategories: $(action).find('#close-categories').val()
+                closeCategories: closeCategories
             })
         })
-        // console.log(event);
+        console.log(event);
 
         let data = await fetch('/communication/event', {
             method: 'post',
@@ -393,28 +489,6 @@
         eventContainer.find('#save-and-edit-button').before(action);
     }
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <div class="container">
