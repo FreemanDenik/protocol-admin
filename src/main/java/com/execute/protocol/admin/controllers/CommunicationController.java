@@ -11,7 +11,7 @@ import com.execute.protocol.admin.services.CategoryService;
 import com.execute.protocol.admin.services.EventService;
 import com.execute.protocol.dto.AnswerDto;
 import com.execute.protocol.dto.CategoryDto;
-import com.execute.protocol.dto.CategoryFastFinerDto;
+import com.execute.protocol.dto.CategoryFinerDto;
 import com.execute.protocol.dto.EventDto;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.data.domain.Page;
@@ -88,9 +88,9 @@ public class CommunicationController {
      */
     @ResponseBody
     @PostMapping(value = "/category")
-    public Set<CategoryDto> category(@RequestBody CategoryFastFinerDto fastFinerDto) {
+    public Set<CategoryDto> category(@RequestBody CategoryFinerDto fastFinerDto) {
         int page = 0;
-        int pageSize = 2;
+        int pageSize = 10;
         QCategory qCategory = QCategory.category;
 
         BooleanBuilder predicates = new BooleanBuilder();
@@ -99,7 +99,7 @@ public class CommunicationController {
                 .map(qCategory.title::contains).map(predicates::and);
 
         Optional.ofNullable(fastFinerDto.getExcludes())
-                .map(qCategory.id::in).map(w->predicates.andNot(w));
+                .map(qCategory.id::in).map(predicates::andNot);
 
         Page<Category> pageCategories = categoryService.getCategoriesBySearchAndWithExcludes(predicates, PageRequest.of(page, pageSize));
         // Преобразуем список категории в Dto список

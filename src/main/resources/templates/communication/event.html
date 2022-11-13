@@ -59,26 +59,29 @@
                             <hr/>
                             <div>
                                 <div>
-                                    <!-- Input ввода поиска категории -->
-                                    <label>Поиск категории</label>
-                                    <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                        Запустить модальное окно со статическим фоном
-                                    </button>
-                                    <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                        x
-                                    </button>
-                                    <!-- Select отображения найденных категории -->
-                                    <select id="category" class="form-control" size="6">
+                                    <!-- Кнопки поиска/сброса категории -->
+                                    <div style="text-align: right">
+                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                            Поиск категории
+                                        </button>
+                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                            Сбросить
+                                        </button>
+                                    </div>
+                                    <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                    <select id="category" class="form-control"
+                                            th:default-size="${model.category == null} ? 4 : 5"
+                                            th:size="${model.category == null} ? 4 : 5">
                                         <optgroup
                                                 label="Дефолт">
                                             <option value="0" th:selected="${model.category == null}">
-                                                -- Общая категория--
+                                                0. Общая категория
                                             </option>
                                         </optgroup>
                                         <optgroup id="current-container"
                                                   label="Текущая категория">
                                             <option th:if="${model.category != null}" th:value="${model.category.id}"
-                                                    th:text="${model.category.title}"
+                                                    th:text="|${model.category.id}. ${model.category.title}|"
                                                     th:title="${model.category.description}" selected></option>
                                         </optgroup>
                                         <optgroup id="checked-container"
@@ -184,21 +187,25 @@
                                     <!-- Открыть категорию карточек -->
                                     <label>Открыть категорию карточек</label>
                                     <div>
-                                        <!-- Input ввода поиска категории -->
-                                        <label>Поиск категории</label>
-                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                            Запустить модальное окно со статическим фоном
-                                        </button>
-                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                            x
-                                        </button>
-                                        <!-- Select отображения найденных категории -->
-                                        <select id="open-categories" class="form-control" multiple size="6">
+                                        <!-- Кнопки поиска/сброса категории -->
+                                        <div style="text-align: right">
+                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                Поиск категории
+                                            </button>
+                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                                Сбросить
+                                            </button>
+                                        </div>
+                                        <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                        <select id="open-categories" class="form-control" multiple exclude-options="#close-categories"
+                                                th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
+                                                th:size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}">
+
                                             <optgroup id="current-container"
                                                       label="Текущие категории">
                                                 <option th:each="i : ${answer.openCategories}"
                                                         th:value="${i.id}"
-                                                        th:text="${i.title}"
+                                                        th:text="|${i.id}. ${i.title}|"
                                                         th:title="${i.description}"
                                                         th:selected="true"></option>
                                             </optgroup>
@@ -209,21 +216,25 @@
                                     </div>
                                     <label>Закрыть категорию карточек</label>
                                     <div>
-                                        <!-- Input ввода поиска категории -->
-                                        <label>Поиск категории</label>
-                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                            Запустить модальное окно со статическим фоном
-                                        </button>
-                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                            x
-                                        </button>
-                                        <!-- Select отображения найденных категории -->
-                                        <select id="close-categories" class="form-control" multiple size="6">
+                                        <!-- Кнопки поиска/сброса категории -->
+                                        <div style="text-align: right">
+                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                Поиск категории
+                                            </button>
+                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                                Сбросить
+                                            </button>
+                                        </div>
+                                        <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                        <select id="close-categories" class="form-control" multiple exclude-options="#open-categories"
+                                                th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
+                                                th:size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}">
+
                                             <optgroup id="current-container"
                                                       label="Текущие категории">
                                                 <option th:each="i : ${answer.closeCategories}"
                                                         th:value="${i.id}"
-                                                        th:text="${i.title}"
+                                                        th:text="|${i.id}. ${i.title}|"
                                                         th:title="${i.description}"
                                                         th:selected="true"></option>
                                             </optgroup>
@@ -316,6 +327,8 @@
         TRIGGER_MODAL_BUTTON.siblings('select').find('option').prop('selected', false);
         // Перебираем контейнер выбранных элементов модального окна и клонируем их в
         // контейнер выбранных элементов карты события
+        let defaultSize = parseInt(TRIGGER_MODAL_BUTTON.siblings('select').attr('default-size'));
+        let count = 0;
         $(obj).closest('.modal-content').find('select optgroup[id=checked-container] option').each(function (e, i) {
             // клонируем
             let option = $(i).clone();
@@ -323,26 +336,41 @@
             option.prop('selected', true);
             // Добавляем элементы в контейнер выбранных элементов карты события
             checkedContainer.append(option);
+            count++;
         })
+        TRIGGER_MODAL_BUTTON.siblings('select').attr('size', count+defaultSize);
         // Закрываем модальное окно
         $('#categoryModal').modal('hide');
     }
 
     function cleanModal(button) {
-        $(button).siblings('select').children('optgroup#checked-container').empty();
+        let size = parseInt($(button).parent().siblings('select').attr('size'));
+        $(button).parent().siblings('select').children('optgroup#checked-container').find('option').each(function (){
+            size--;
+        });
+        $(button).parent().siblings('select').children('optgroup#checked-container').empty();
+        $(button).parent().siblings('select').attr('size', size);
     }
 
     // Открывает модальное окно и выполняет все сопутствующие события
     function showModal(button) {
-        // Получам триггер кнопку
-        TRIGGER_MODAL_BUTTON = $(button);
+        // Получаем триггер родитель кнопки (простой div, почему простой div?
+        // Потому что он на одном уровне с select'ом и другими основными элементами)
+        TRIGGER_MODAL_BUTTON = $(button).parent();
+        $('#categoryModal').find('input#finder-category').empty();
+        $('#categoryModal').find('input#finder-category').keyup();
         // Получаем контейнер текущих элементов модального окна
         let modalСurrent = $('#categoryModal').find('select').children('optgroup#current-container');
-        modalСurrent.empty();
+        let modalChecked = $('#categoryModal').find('select').children('optgroup#checked-container');
+
+        $('#categoryModal').find('select optgroup').empty();
         // Перебираем текущие элементы карты события и клонируем их
         // в контейнер текущих элементов модального окна
         TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container').children('option').each(function (e, i) {
             modalСurrent.append($(i).clone());
+        });
+        TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#checked-container').children('option').each(function (e, i) {
+            modalChecked.append($(i).clone());
         });
         // Открываем модальное окно
         $('#categoryModal').modal('show');
@@ -360,6 +388,13 @@
             // Проверка select на атрибут multiple, от этого зависит сколько option можно добавить
             // (если true то сколько угодно, если false то только 1)
             let isMultiply = TRIGGER_MODAL_BUTTON.siblings('select').attr('multiple') !== undefined;
+            // Исключаем пункты которые в другом select, если таковой указан в атрибутах select exclude-options
+            let excludeOptions = TRIGGER_MODAL_BUTTON.siblings('select').attr('exclude-options') !== undefined ? TRIGGER_MODAL_BUTTON.siblings('select').attr('exclude-options') : undefined;
+            if (excludeOptions !== undefined) {
+                $(excludeOptions).find('option').each(function (e,i) {
+                    excludes.push($(i).val());
+                });
+            }
             // Массив исключений формируется из select текущих категории (options)
             TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container').children('option').each(function (e, i) {
                 excludes.push($(i).val());
