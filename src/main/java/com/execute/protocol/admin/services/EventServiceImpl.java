@@ -36,7 +36,6 @@ public class EventServiceImpl implements EventService{
     //@Transactional
     public void save(Event event){
         Set<Answer> answer = event.getAnswers();
-
         answer.forEach(e -> {
             e.setEvent(event);
         });

@@ -26,4 +26,5 @@ public class Category {
     private String title;
     @Column
     private String description;
+
 }

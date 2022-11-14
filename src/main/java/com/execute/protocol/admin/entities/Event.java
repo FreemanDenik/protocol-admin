@@ -26,6 +26,10 @@ public class Event {
     private boolean useOnce;
     @Column
     private int category;
+//    @Column
+//    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+//    @JoinColumn(name = "category_id", referencedColumnName = "id")
+//    private Category oCategory;
     @Column
     @NotNull
     @NotBlank

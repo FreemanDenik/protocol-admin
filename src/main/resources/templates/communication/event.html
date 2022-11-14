@@ -197,7 +197,8 @@
                                             </button>
                                         </div>
                                         <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                        <select id="open-categories" class="form-control" multiple exclude-options="#close-categories"
+                                        <select id="open-categories" class="form-control" multiple
+                                                exclude-options="#close-categories"
                                                 th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
                                                 th:size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}">
 
@@ -226,7 +227,8 @@
                                             </button>
                                         </div>
                                         <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                        <select id="close-categories" class="form-control" multiple exclude-options="#open-categories"
+                                        <select id="close-categories" class="form-control" multiple
+                                                exclude-options="#open-categories"
                                                 th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
                                                 th:size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}">
 
@@ -338,14 +340,14 @@
             checkedContainer.append(option);
             count++;
         })
-        TRIGGER_MODAL_BUTTON.siblings('select').attr('size', count+defaultSize);
+        TRIGGER_MODAL_BUTTON.siblings('select').attr('size', count + defaultSize);
         // Закрываем модальное окно
         $('#categoryModal').modal('hide');
     }
 
     function cleanModal(button) {
         let size = parseInt($(button).parent().siblings('select').attr('size'));
-        $(button).parent().siblings('select').children('optgroup#checked-container').find('option').each(function (){
+        $(button).parent().siblings('select').children('optgroup#checked-container').find('option').each(function () {
             size--;
         });
         $(button).parent().siblings('select').children('optgroup#checked-container').empty();
@@ -380,25 +382,25 @@
         $('#finder-category').on('keyup', async function () {
             // название категории или ее часть (для поиска)
             let search = $(this).val();
-            let modalSelect = $(this).siblings('select');
             // Контейнер в модальном окне куда загружаются по поиску категории с сервера
             let loadContainer = $(this).siblings('table#load-category-container');
-            // Массив исключающих категории, в которых событие уже состоит (чтобы их не было в результатах поиска)
-            let excludes = [];
+            // Контейнер текущих категории карты события
+            let triggerCurrentContainer = TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container');
+            // id select чьи options мы будем исключать
+            let excludeOptions = TRIGGER_MODAL_BUTTON.siblings('select').attr('exclude-options');
             // Проверка select на атрибут multiple, от этого зависит сколько option можно добавить
             // (если true то сколько угодно, если false то только 1)
             let isMultiply = TRIGGER_MODAL_BUTTON.siblings('select').attr('multiple') !== undefined;
-            // Исключаем пункты которые в другом select, если таковой указан в атрибутах select exclude-options
-            let excludeOptions = TRIGGER_MODAL_BUTTON.siblings('select').attr('exclude-options') !== undefined ? TRIGGER_MODAL_BUTTON.siblings('select').attr('exclude-options') : undefined;
-            if (excludeOptions !== undefined) {
-                $(excludeOptions).find('option').each(function (e,i) {
-                    excludes.push($(i).val());
-                });
-            }
-            // Массив исключений формируется из select текущих категории (options)
-            TRIGGER_MODAL_BUTTON.siblings('select').children('optgroup#current-container').children('option').each(function (e, i) {
-                excludes.push($(i).val());
-            });
+            // Массив исключающих категории, который сразу заполняется исключением элементов другого select,
+            // Т.е., исключаем пункты другого select, если такой select указан в атрибутах exclude-options
+            let excludes =
+                excludeOptions !== undefined
+                    ? $(excludeOptions).find('option').map((key, elm) => elm.value).toArray()
+                    : [];
+            // Добавляем массив исключений формируется из select текущих категории (options)
+            // Чтобы не отображать текущие категории
+            excludes.concat(triggerCurrentContainer.find('option').map((key, elm) => elm.value).toArray());
+
             // Очищаем контейнер загрузки для новых результатов
             loadContainer.empty();
             // Пропускает поиск только если 0 (10-20 последних результатов) или больше 2 символов
@@ -474,18 +476,18 @@
             answers: []
         }
         $.each($('.action'), function (actionNum, action) {
-            let openCategories = [];
-            $.each($(action).find('#open-categories').val(), function (openCategoryNum, openCategoryId) {
-                openCategories.push({
-                    id: openCategoryId
-                })
-            })
-            let closeCategories = [];
-            $.each($(action).find('#close-categories').val(), function (closeCategoryNum, closeCategoryId) {
-                closeCategories.push({
-                    id: closeCategoryId
-                })
-            })
+            let openCategories = $(action).find('#open-categories').val().map(id => ({
+                id: id
+            }));
+            let closeCategories = $(action).find('#close-categories').val().map(id => ({
+                id: id
+            }));
+            ;
+            // $.each($(action).find('#close-categories').val(), function (closeCategoryNum, closeCategoryId) {
+            //     closeCategories.push({
+            //         id: closeCategoryId
+            //     })
+            // })
             event.answers.push({
                 id: $(action).find('#action-id').val(),
                 useOnce: $(action).find('#use-once-answer').is(":checked"),
