@@ -40,10 +40,7 @@
                     <div id="event-container" style="width: 600px;">
                         <div>
                             <h4>ID события</h4>
-                            <hr>
                             <input id="event-id" class="form-control" th:value="${model.id}" readonly>
-                            <br/>
-                            <br/>
                             <!-- Многоразовая/Одноразовая -->
                             <h4>Многоразовая/Одноразовая карточка</h4>
                             <hr>
@@ -70,6 +67,7 @@
                                     </div>
                                     <!-- Select отображения дефолтных/текущих/найденных категории -->
                                     <select id="category" class="form-control"
+                                            url="/communication/category"
                                             th:default-size="${model.category == null} ? 4 : 5"
                                             th:size="${model.category == null} ? 4 : 5">
                                         <optgroup
@@ -107,8 +105,6 @@
                                 <div class="action" id="action">
                                     <label>ID действия</label>
                                     <input id="action-id" th:value="${answer.id}" class="form-control" readonly>
-                                    <br/>
-                                    <br/>
                                     <!-- Многоразовый/Одноразовый ответ -->
                                     <label>Многоразовый/Одноразовый ответ</label><br/>
                                     <div>
@@ -166,14 +162,66 @@
                                             </tr>
                                         </table>
                                     </div>
-                                    <!-- Спец игровые предметы -->
-                                    <label>Спец игровые предметы</label>
+                                    <!-- Доступно только если есть предметы  -->
+                                    <label>Доступно только если есть предметы</label>
                                     <div>
-                                        <select id="special-things" class="form-control" multiple
-                                                data-max-options="2">
-                                            <option th:each="i : ${specials}" th:value="${i.getKey()}"
-                                                    th:text="${i.getValue()}"
-                                                    th:selected="${answer.specials != null ? answer.specials.contains(i.getKey()) : false}"></option>
+                                        <!-- Кнопки поиска/сброса предметы -->
+                                        <div style="text-align: right">
+                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                Поиск предметов
+                                            </button>
+                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                                Сбросить
+                                            </button>
+                                        </div>
+                                        <!-- Select отображения дефолтных/текущих/найденных предметов -->
+                                        <select id="if-things" class="form-control" multiple
+                                                url="/communication/thing"
+                                                th:default-size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}"
+                                                th:size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}">
+
+                                            <optgroup id="current-container"
+                                                      label="Текущие предметы">
+                                                <option th:each="i : ${answer.ifThings}"
+                                                        th:value="${i.id}"
+                                                        th:text="|${i.id}. ${i.title}|"
+                                                        th:title="${i.description}"
+                                                        th:selected="true"></option>
+                                            </optgroup>
+                                            <optgroup id="checked-container"
+                                                      label="Выбранные предметы">
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <!-- Добавить предметы  -->
+                                    <label>Добавить предметы</label>
+                                    <div>
+                                        <!-- Кнопки поиска/сброса предметы -->
+                                        <div style="text-align: right">
+                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                Поиск предметов
+                                            </button>
+                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                                Сбросить
+                                            </button>
+                                        </div>
+                                        <!-- Select отображения дефолтных/текущих/найденных предметов -->
+                                        <select id="add-things" class="form-control" multiple
+                                                url="/communication/thing"
+                                                th:default-size="${answer.addThings != null ? answer.addThings.size()+2 : 2}"
+                                                th:size="${answer.addThings != null ? answer.addThings.size()+2 : 2}">
+
+                                            <optgroup id="current-container"
+                                                      label="Текущие предметы">
+                                                <option th:each="i : ${answer.addThings}"
+                                                        th:value="${i.id}"
+                                                        th:text="|${i.id}. ${i.title}|"
+                                                        th:title="${i.description}"
+                                                        th:selected="true"></option>
+                                            </optgroup>
+                                            <optgroup id="checked-container"
+                                                      label="Выбранные предметы">
+                                            </optgroup>
                                         </select>
                                     </div>
                                     <!-- Привязка карточки -->
@@ -199,6 +247,7 @@
                                         <!-- Select отображения дефолтных/текущих/найденных категории -->
                                         <select id="open-categories" class="form-control" multiple
                                                 exclude-options="#close-categories"
+                                                url="/communication/category"
                                                 th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
                                                 th:size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}">
 
@@ -229,6 +278,7 @@
                                         <!-- Select отображения дефолтных/текущих/найденных категории -->
                                         <select id="close-categories" class="form-control" multiple
                                                 exclude-options="#open-categories"
+                                                url="/communication/category"
                                                 th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
                                                 th:size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}">
 
@@ -391,16 +441,17 @@
             // Проверка select на атрибут multiple, от этого зависит сколько option можно добавить
             // (если true то сколько угодно, если false то только 1)
             let isMultiply = TRIGGER_MODAL_BUTTON.siblings('select').attr('multiple') !== undefined;
+            let url = TRIGGER_MODAL_BUTTON.siblings('select').attr('url') !== undefined ? TRIGGER_MODAL_BUTTON.siblings('select').attr('url') : undefined;
+            if(url === undefined) return;
             // Массив исключающих категории, который сразу заполняется исключением элементов другого select,
             // Т.е., исключаем пункты другого select, если такой select указан в атрибутах exclude-options
             let excludes =
                 excludeOptions !== undefined
-                    ? $(excludeOptions).find('option').map((key, elm) => elm.value).toArray()
+                    ? TRIGGER_MODAL_BUTTON.closest('.action').find(excludeOptions).find('option').map((key, elm) => elm.value).toArray()
                     : [];
             // Добавляем массив исключений формируется из select текущих категории (options)
             // Чтобы не отображать текущие категории
-            excludes.concat(triggerCurrentContainer.find('option').map((key, elm) => elm.value).toArray());
-
+            excludes = excludes.concat(triggerCurrentContainer.find('option').map((key, elm) => elm.value).toArray());
             // Очищаем контейнер загрузки для новых результатов
             loadContainer.empty();
             // Пропускает поиск только если 0 (10-20 последних результатов) или больше 2 символов
@@ -412,7 +463,7 @@
                     excludes: excludes
                 }
                 // Отправка данных
-                let data = await fetch('/communication/category', {
+                let data = await fetch(url, {
                     method: 'post',
                     headers: {
                         'Content-Type': 'application/json'
@@ -482,7 +533,13 @@
             let closeCategories = $(action).find('#close-categories').val().map(id => ({
                 id: id
             }));
-            ;
+            let addThings = $(action).find('#add-things').val().map(id => ({
+                id: id
+            }));
+            let ifThings = $(action).find('#if-things').val().map(id => ({
+                id: id
+            }));
+
             // $.each($(action).find('#close-categories').val(), function (closeCategoryNum, closeCategoryId) {
             //     closeCategories.push({
             //         id: closeCategoryId
@@ -497,7 +554,8 @@
                 influence: $(action).find('#answer-influence').val(),
                 shadow: $(action).find('#answer-shadow').val(),
                 luck: $(action).find('#answer-luck').val(),
-                specials: $(action).find('#special-things').val(),
+                addThings: addThings,
+                ifThings: ifThings,
                 link: $(action).find('#link-cart').val(),
                 openCategories: openCategories,
                 closeCategories: closeCategories
@@ -522,6 +580,7 @@
         let eventContainer = $('#event-container');
         let action = eventContainer.find('#action').clone();
         action.find('input, textarea').val('');
+        action.find('input#action-id').val('0')
         action.find("hr").before("<button class='btn btn-danger' style='float: right' onclick='$(this).parent().remove()'>Удалить ответ</button><br/>");
         eventContainer.find('#save-and-edit-button').before(action);
     }

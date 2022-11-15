@@ -31,6 +31,7 @@ public interface EventMapper {
      * @param eventDto {@link EventDto}
      * @return {@link Event}
      */
+
     Event mapEventFromDto(EventDto eventDto);
 
     /**

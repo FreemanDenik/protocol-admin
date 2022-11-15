@@ -2,13 +2,16 @@ package com.execute.protocol.admin.entities;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.domain.Sort;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -16,6 +19,7 @@ import java.util.Set;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "TEMP_EVENTS")
 public class Event {
     @Id
@@ -26,13 +30,10 @@ public class Event {
     private boolean useOnce;
     @Column
     private int category;
-//    @Column
-//    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-//    @JoinColumn(name = "category_id", referencedColumnName = "id")
-//    private Category oCategory;
     @Column
     @NotNull
     @NotBlank
+    @EqualsAndHashCode.Include
     private String eventText;
     @Column(name = "create_time")
     @NotNull
@@ -44,9 +45,24 @@ public class Event {
     @NotNull
     @OneToMany(
             mappedBy = "event",
-            fetch = FetchType.LAZY,
+            fetch = FetchType.EAGER,
             targetEntity = Answer.class,
             orphanRemoval = true,
             cascade= {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private Set<Answer> answers;
+    @OrderBy( "id ASC" )
+    private Set<Answer> answers = new LinkedHashSet<>();
+//    public Set<Answer> getAnswers(){
+//        return answers.stream().sorted(Comparator.comparingInt(Answer::getId)).collect(Collectors.toCollection(LinkedHashSet::new));
+//    }
+    public void addAnswer(Answer answer) {
+        answers.add(answer);
+        answer.setEvent(this);
+    }
+    public void removeAnswer(Answer answer) {
+        answers.remove(answer);
+        answer.setEvent(null);
+    }
+    public void syncAnswers(){
+        answers.forEach(w->w.setEvent(this));
+    }
 }

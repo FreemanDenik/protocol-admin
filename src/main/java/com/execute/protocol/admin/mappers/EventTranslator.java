@@ -1,8 +1,11 @@
 package com.execute.protocol.admin.mappers;
 
 import com.execute.protocol.admin.entities.Category;
+import com.execute.protocol.admin.entities.Thing;
 import com.execute.protocol.admin.repositories.CategoryRepository;
+import com.execute.protocol.admin.repositories.ThingRepository;
 import com.execute.protocol.dto.CategoryDto;
+import com.execute.protocol.dto.ThingDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +20,12 @@ import java.util.stream.Collectors;
  */
 @Component
 public class EventTranslator {
-    public final CategoryRepository repository;
+    public final CategoryRepository categoryRepository;
+    public final ThingRepository thingRepository;
     @Autowired
-    public EventTranslator(CategoryRepository repository) {
-        this.repository = repository;
+    public EventTranslator(CategoryRepository categoryRepository, ThingRepository thingRepository) {
+        this.categoryRepository = categoryRepository;
+        this.thingRepository = thingRepository;
     }
 
 
@@ -29,26 +34,36 @@ public class EventTranslator {
      * @param integers Set Integer
      * @return Set CategoryDto
      */
+ 
     public Set<CategoryDto> mapSetIntegerToSetCategoryDtoDI(Set<Integer> integers) {
-        return CategoryMapper.INSTANCE.mapSetCategoryToSetDto(repository.findByIdIn(integers));
+        return CategoryMapper.INSTANCE.mapSetCategoryToSetCategoryDto(categoryRepository.findByIdIn(integers));
+    }  
+    public Set<ThingDto> mapSetIntegerToSetThingDtoDI(Set<Integer> integers) {
+        return ThingMapper.INSTANCE.mapSetThingToSetThingDto(thingRepository.findByIdIn(integers));
     }
-
     /**
      * Преобразуем Integer в Category обращаясь в базу по Integer
      * @param integer Integer
      * @return CategoryDto
      */
     public CategoryDto mapIntegerToCategoryDtoDI(Integer integer) {
-        Optional<Category> category = repository.findById(integer);
-        return category.isEmpty() ? null : CategoryMapper.INSTANCE.mapCategoryToDto(category.get());
+        Optional<Category> category = categoryRepository.findById(integer);
+        return category.isEmpty() ? null : CategoryMapper.INSTANCE.mapCategoryToCategoryDto(category.get());
+    }
+    public ThingDto mapIntegerToThingDtoDI(Integer integer) {
+        Optional<Thing> thing = thingRepository.findById(integer);
+        return thing.isEmpty() ? null : ThingMapper.INSTANCE.mapThingToThingDto(thing.get());
     }
     /**
      * Преобразуем Set Category в Set Integer
-     * @param categories Set Category
+     * @param categoriesDto Set Category
      * @return Set Integer
      */
-    public Set<Integer> mapSetCategoryDtoToSetIntegerById(Set<CategoryDto> categories) {
-        return categories.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
+    public Set<Integer> mapSetCategoryDtoToSetIntegerById(Set<CategoryDto> categoriesDto) {
+        return categoriesDto.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
+    }    
+    public Set<Integer> mapSetThingDtoToSetIntegerById(Set<ThingDto> thingsDto) {
+        return thingsDto.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
     }
     /**
      * Преобразуем Category в Integer
@@ -57,5 +72,8 @@ public class EventTranslator {
      */
     public Integer mapCategoryDtoToIntegerById(CategoryDto category) {
         return category.getId();
+    }
+    public Integer mapThingDtoToIntegerById(ThingDto thingDto) {
+        return thingDto.getId();
     }
 }

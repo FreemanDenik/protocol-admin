@@ -7,6 +7,7 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "TEMP_ANSWERS")
 public class Answer {
     @Id
@@ -25,6 +27,7 @@ public class Answer {
     @NotNull
     @Column(name = "use_once")
     private boolean useOnce;
+    @EqualsAndHashCode.Include
     @Column(name = "answer_text", nullable = false)
     private String answerText;
     @Column
@@ -37,10 +40,14 @@ public class Answer {
     private byte shadow;
     @Column
     private byte luck;
-    @Column
+    @Column(name = "add_things")
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "TEMP_SPECIALS")
-    private Set<Integer> specials;
+    @CollectionTable(name = "TEMP_ADD_THINGS")
+    private Set<Integer> addThings;
+    @Column(name = "if_things")
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "TEMP_IF_THINGS")
+    private Set<Integer> ifThings;
     @Column
     private int link;
     @Column(name = "open_categories")

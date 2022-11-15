@@ -3,10 +3,9 @@ package com.execute.protocol.admin.mappers;
 
 import com.execute.protocol.admin.entities.Category;
 import com.execute.protocol.dto.CategoryDto;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,12 +19,12 @@ public interface CategoryMapper {
      * @param categorySet Set Category
      * @return Set CategoryDto
      */
-    Set<CategoryDto> mapSetCategoryToSetDto(Set<Category> categorySet);
+    Set<CategoryDto> mapSetCategoryToSetCategoryDto(Set<Category> categorySet);
     /**
      * Преобразуем коллекцию Set {@link CategoryDto} в коллекцию Set {@link Category}
      * @param category Set Category
      * @return Set CategoryDto
      */
-    CategoryDto mapCategoryToDto(Category category);
+    CategoryDto mapCategoryToCategoryDto(Category category);
 
 }

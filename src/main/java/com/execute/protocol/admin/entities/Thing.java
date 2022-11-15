@@ -1,7 +1,6 @@
 package com.execute.protocol.admin.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.querydsl.core.annotations.QueryEntity;
+import com.execute.protocol.enums.EmTarget;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -11,22 +10,22 @@ import javax.persistence.*;
 @Getter
 @Setter
 @SuperBuilder
-@QueryEntity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "TEMP_CATEGORIES")
-//@JsonIgnoreProperties({"event"})
-public class Category {
+@Table(name = "THINGS")
+public class Thing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
-    @Column(unique = true)
+    @Column
     @EqualsAndHashCode.Include
     private String title;
     @Column
     private String description;
-
+    @Column
+    private EmTarget target;  // GOLD     REPUTATION  ANSWER
+    @Column
+    private int count; // +20       -30         23
 }
