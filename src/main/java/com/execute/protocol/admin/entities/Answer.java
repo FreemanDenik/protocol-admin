@@ -40,13 +40,16 @@ public class Answer {
     private byte shadow;
     @Column
     private byte luck;
-    @Column(name = "add_things")
+    // не давать название addThinks mupstruct пропускает такие поля
+    @Column(name = "give_things")
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "TEMP_ADD_THINGS")
-    private Set<Integer> addThings;
+    @CollectionTable(name = "TEMP_GIVE_THINGS")
+
+    private Set<Integer> giveThings;
     @Column(name = "if_things")
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_IF_THINGS")
+
     private Set<Integer> ifThings;
     @Column
     private int link;

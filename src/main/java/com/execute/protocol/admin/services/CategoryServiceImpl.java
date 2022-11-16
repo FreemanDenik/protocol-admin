@@ -1,21 +1,23 @@
 package com.execute.protocol.admin.services;
 
 import com.execute.protocol.admin.entities.Category;
+import com.execute.protocol.admin.entities.QCategory;
+import com.execute.protocol.admin.interfaces.FastFiner;
 import com.execute.protocol.admin.repositories.CategoryRepository;
-import com.execute.protocol.dto.CategoryDto;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 @Service
-public class CategoryServiceImpl implements CategoryService {
+public class CategoryServiceImpl implements CategoryService, FastFinerService<Category> {
     private final CategoryRepository categoryRepository;
+
 
     @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository) {
@@ -23,38 +25,31 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * Создает новую категорию
+     * Получаем результаты по поиску части названия,
+     * а так же отфильтровываем уже существующие и пагинируем ответ
      *
-     * @param categoryDto создаваемая категория
-     * @return id - созданной категории
+     * @param search   поисковая строка
+     * @param excludes коллекция id исключении
+     * @param page     номер страница
+     * @param pageSize количество записей на странице
+     * @return
      */
-    public Category save(CategoryDto categoryDto) {
-        Category category = Category.builder().title(categoryDto.getTitle()).description(categoryDto.getDescription()).build();
-        categoryRepository.save(category);
-        return category;
+
+    public Page<? extends FastFiner> getBySearchAndWithExcludes(
+            String search,
+            Set<Integer> excludes,
+            int page,
+            int pageSize) {
+        BooleanBuilder predicates = new BooleanBuilder();
+        QCategory qCategory = QCategory.category;
+        // Сортируем по строке поиска
+        Optional.ofNullable(search)
+                .map(qCategory.title::contains).map(predicates::and);
+        // Сортируем по исключающим категориям
+        // условие добавляется только если excludes != null
+        Optional.ofNullable(excludes)
+                .map(qCategory.id::in).map(predicates::andNot);
+        return categoryRepository.findAll(predicates, PageRequest.of(page, pageSize));
     }
 
-    /**
-     * Получаем результаты по поиску части названия (contains)
-     * а так отфильтровываем уже существующие и пагинируем ответ
-     * @param predicates BooleanBuilder
-     * @param pade PageRequest
-     * @return Page Category
-     */
-    public Page<Category> getCategoriesBySearchAndWithExcludes(BooleanBuilder predicates, PageRequest pade){
-
-
-        return categoryRepository.findAll(predicates, pade);
-    }
-    /**
-     * Получаем категорию по id
-     * @param categoryId id
-     * @return Category
-     */
-    public Category getCategoryById(int categoryId){
-        return categoryRepository.findById(categoryId).orElse(null);
-    }
-    public Set<Category> getByListId(Set<Integer> categoriesId){
-        return categoryRepository.findByIdIn(categoriesId);
-    }
 }

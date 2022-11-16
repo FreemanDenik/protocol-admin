@@ -2,6 +2,8 @@ package com.execute.protocol.admin.mappers;
 
 
 import com.execute.protocol.admin.entities.Thing;
+import com.execute.protocol.admin.interfaces.FastFiner;
+import com.execute.protocol.dto.CategoryDto;
 import com.execute.protocol.dto.ThingDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -26,5 +28,11 @@ public interface ThingMapper {
      * @return Set ThingDto
      */
     ThingDto mapThingToThingDto(Thing thing);
+//    /**
+//     * Преобразуем коллекцию Set {@link FastFiner} в коллекцию Set {@link ThingDto}
+//     * @param fastFiner Set FastFiner
+//     * @return Set ThingDto
+//     */
+//    Set<ThingDto> mapSetFastFinerToSetThingDto(Set<? extends FastFiner> fastFiner);
 
 }

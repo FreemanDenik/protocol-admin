@@ -10,8 +10,4 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 public interface CategoryService {
-    Category save(CategoryDto categoryDto);
-    Page<Category> getCategoriesBySearchAndWithExcludes(BooleanBuilder predicates, PageRequest pade);
-    Category getCategoryById(int categoryId);
-    Set<Category> getByListId(Set<Integer> categoriesId);
 }

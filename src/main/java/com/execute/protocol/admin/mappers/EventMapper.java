@@ -25,6 +25,7 @@ public interface EventMapper {
      * @param event {@link Event}
      * @return {@link EventDto}
      */
+
     EventDto mapEventToDto(Event event);
     /**
      * Преобразуем EventDto в Event

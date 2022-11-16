@@ -27,8 +27,6 @@ public class EventTranslator {
         this.categoryRepository = categoryRepository;
         this.thingRepository = thingRepository;
     }
-
-
     /**
      * Преобразуем Set Integer в Set Category обращаясь в базу по Set Integer
      * @param integers Set Integer
@@ -48,12 +46,18 @@ public class EventTranslator {
      */
     public CategoryDto mapIntegerToCategoryDtoDI(Integer integer) {
         Optional<Category> category = categoryRepository.findById(integer);
+       // return Optional.ofNullable(category.isEmpty()).map(w->CategoryMapper.INSTANCE.mapCategoryToCategoryDto(w.get())).orElse(null);
         return category.isEmpty() ? null : CategoryMapper.INSTANCE.mapCategoryToCategoryDto(category.get());
     }
-    public ThingDto mapIntegerToThingDtoDI(Integer integer) {
-        Optional<Thing> thing = thingRepository.findById(integer);
-        return thing.isEmpty() ? null : ThingMapper.INSTANCE.mapThingToThingDto(thing.get());
-    }
+//    /**
+//     * Преобразуем Integer в Thing обращаясь в базу по Integer <br>
+//     * @param integer Integer
+//     * @return ThingDto
+//     */
+//    public ThingDto mapIntegerToThingDtoDI(Integer integer) {
+//        Optional<Thing> thing = thingRepository.findById(integer);
+//        return thing.isEmpty() ? null : ThingMapper.INSTANCE.mapThingToThingDto(thing.get());
+//    }
     /**
      * Преобразуем Set Category в Set Integer
      * @param categoriesDto Set Category
@@ -61,7 +65,12 @@ public class EventTranslator {
      */
     public Set<Integer> mapSetCategoryDtoToSetIntegerById(Set<CategoryDto> categoriesDto) {
         return categoriesDto.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
-    }    
+    }
+    /**
+     * Преобразуем Set Thing в Set Integer
+     * @param thingsDto Set Category
+     * @return Set Integer
+     */
     public Set<Integer> mapSetThingDtoToSetIntegerById(Set<ThingDto> thingsDto) {
         return thingsDto.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
     }
@@ -73,7 +82,13 @@ public class EventTranslator {
     public Integer mapCategoryDtoToIntegerById(CategoryDto category) {
         return category.getId();
     }
-    public Integer mapThingDtoToIntegerById(ThingDto thingDto) {
-        return thingDto.getId();
-    }
+//    /**
+//     * Преобразуем Thing в Integer <br>
+//     * @param thingDto Category
+//     * @return Set Integer
+//     */
+//    public Integer mapThingDtoToIntegerById(ThingDto thingDto) {
+//        return thingDto.getId();
+//    }
+
 }

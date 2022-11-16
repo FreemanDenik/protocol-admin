@@ -5,7 +5,6 @@ import com.execute.protocol.admin.repositories.AnswerRepository;
 import com.execute.protocol.dto.AnswerDto;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,7 +35,6 @@ public class AnswerServiceImpl implements AnswerService {
      * @param answersDto
      * @param answers
      */
-
     public void deleteAnswersInDtoDifferent(Set<AnswerDto> answersDto, Set<Answer> answers) {
 //        Set<Integer> dtoIds = answersDto.stream().mapToInt(w -> w.getId()).boxed().collect(Collectors.toSet());
 //        Set<Integer> ids = answers.stream().filter(w -> !dtoIds.contains(w.getId()))

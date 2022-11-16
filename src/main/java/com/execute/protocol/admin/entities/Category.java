@@ -1,7 +1,6 @@
 package com.execute.protocol.admin.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.querydsl.core.annotations.QueryEntity;
+import com.execute.protocol.admin.interfaces.FastFiner;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -11,18 +10,19 @@ import javax.persistence.*;
 @Getter
 @Setter
 @SuperBuilder
-@QueryEntity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "TEMP_CATEGORIES")
 //@JsonIgnoreProperties({"event"})
-public class Category {
+public class Category implements FastFiner {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
+    @Column
+    private boolean publication;
     @Column(unique = true)
     @EqualsAndHashCode.Include
     private String title;

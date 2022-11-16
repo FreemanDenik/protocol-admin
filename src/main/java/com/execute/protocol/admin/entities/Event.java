@@ -27,6 +27,8 @@ public class Event {
     @EqualsAndHashCode.Include
     private int id;
     @Column
+    private boolean publication;
+    @Column
     private boolean useOnce;
     @Column
     private int category;
