@@ -1,18 +1,10 @@
 package com.execute.protocol.admin.controllers;
 
-import com.execute.protocol.admin.entities.Category;
 import com.execute.protocol.admin.entities.Event;
-import com.execute.protocol.admin.entities.Thing;
-import com.execute.protocol.admin.interfaces.FastFiner;
-import com.execute.protocol.admin.mappers.CategoryMapper;
 import com.execute.protocol.admin.mappers.EventMapper;
-import com.execute.protocol.admin.mappers.ThingMapper;
 import com.execute.protocol.admin.services.AnswerService;
 import com.execute.protocol.admin.services.EventService;
-import com.execute.protocol.admin.services.FastFinerService;
-import com.execute.protocol.admin.services.ThingService;
 import com.execute.protocol.dto.*;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -76,16 +68,16 @@ public class CommunicationController {
      */
     @ResponseBody
     @PostMapping(value = "/event")
-    public int create(@RequestBody EventDto eventDto) {
-        int eventId = eventDto.getId();
+    public int create(@RequestBody EventDto eventDto, @RequestParam(name = "answerId") int answerId) {
+        int eventDtoId = eventDto.getId();
         Event event;
         // Создание события
-        if (eventId == 0) {
+        if (eventDtoId == 0) {
             event = eventMapper.mapEventFromDto(eventDto);
             // Задаем время создания
             event.setCreateTime(LocalDateTime.now());
         } else {
-            event = eventService.getEvent(eventId);
+            event = eventService.getEvent(eventDtoId);
             // Удаление из Event.Answer записей которых нет в EventDto.AnswerDto
             // выражение использовать до Mapper преобразовании
             event.getAnswers()
@@ -101,7 +93,11 @@ public class CommunicationController {
         }
         // Задаем время изменения
         event.setUpdateTime(LocalDateTime.now());
-        eventService.save(event);
+        if (answerId == 0) {
+            eventService.save(event);
+        } else if (answerId > 0) {
+            return eventService.save(event, answerId);
+        }
         return event.getId();
     }
 }

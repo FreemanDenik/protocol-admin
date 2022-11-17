@@ -49,7 +49,6 @@ public class Answer {
     @Column(name = "if_things")
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_IF_THINGS")
-
     private Set<Integer> ifThings;
     @Column
     private int link;
@@ -61,8 +60,12 @@ public class Answer {
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_CLOSE_CATEGORIES")
     private Set<Integer> closeCategories;
-    @ManyToOne (optional=false, fetch = FetchType.EAGER)
+    //optional = false,  Если установлено значение false, то всегда должна существовать ненулевая связь.
+
+    // @JoinColumnработает с физической моделью, т. е. с тем, как вещи фактически расположены в хранилище данных (базе данных). Указание nullable = falseсделает столбец БД необнуляемым.
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", referencedColumnName = "id")
     private Event event;
+
 
 }

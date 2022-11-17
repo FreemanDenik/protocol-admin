@@ -90,28 +90,28 @@ class ProtocolAdminApplicationTests {
                                         .id(4).build())).build()
                 )))
                 .build();
-        this.eventDto1 = new EventDto(
-                1,
-                false,
-                CategoryDto.builder().build(),
-                "event text 1",
-                new LinkedHashSet<>(Arrays.asList(
-                        AnswerDto.builder().id(1).answerText("answer text 1")
-                                .openCategories(Set.of(CategoryDto.builder()
-                                        .id(1).build()))
-                                .closeCategories(Set.of(CategoryDto.builder().
-                                        id(2).build())).build(),
-                        AnswerDto.builder().id(2).answerText("answer text 2")
-                                .openCategories(Set.of(CategoryDto.builder()
-                                        .id(2).build()))
-                                .closeCategories(Set.of(CategoryDto.builder()
-                                        .id(1).build())).build(),
-                        AnswerDto.builder().id(3).answerText("answer text 3")
-                                .openCategories(Set.of(CategoryDto.builder()
-                                        .id(3).build()))
-                                .closeCategories(Set.of(CategoryDto.builder()
-                                        .id(4).build())).build()
-                )));
+//        this.eventDto1 = new EventDto(
+//                1,
+//                false,
+//                CategoryDto.builder().build(),
+//                "event text 1",
+//                new LinkedHashSet<>(Arrays.asList(
+//                        AnswerDto.builder().id(1).answerText("answer text 1")
+//                                .openCategories(Set.of(CategoryDto.builder()
+//                                        .id(1).build()))
+//                                .closeCategories(Set.of(CategoryDto.builder().
+//                                        id(2).build())).build(),
+//                        AnswerDto.builder().id(2).answerText("answer text 2")
+//                                .openCategories(Set.of(CategoryDto.builder()
+//                                        .id(2).build()))
+//                                .closeCategories(Set.of(CategoryDto.builder()
+//                                        .id(1).build())).build(),
+//                        AnswerDto.builder().id(3).answerText("answer text 3")
+//                                .openCategories(Set.of(CategoryDto.builder()
+//                                        .id(3).build()))
+//                                .closeCategories(Set.of(CategoryDto.builder()
+//                                        .id(4).build())).build()
+//                )));
 
        // controller = new CommunicationController(categoryService, categoryRepository, eventService, answerService, eventMapper);
     }
@@ -119,7 +119,7 @@ class ProtocolAdminApplicationTests {
     @Test
     void createEvent() {
 
-        controller.create(this.eventDto0);
+        controller.create(this.eventDto0, 0);
         var result = eventRepository.findAll().get(0);
         assertEquals(result.getAnswers().size(), 3);
         assertNotNull(result.getAnswers());
@@ -135,7 +135,7 @@ class ProtocolAdminApplicationTests {
                 .collect(Collectors.toSet()));
         this.eventDto0.getAnswers().stream().filter(w -> w.getId() == 2).findFirst().ifPresent(w -> w.setAnswerText("answer text 22"));
 
-        controller.create(this.eventDto0);
+        controller.create(this.eventDto0, 0);
         var result2 = eventRepository.findAll().get(0);
         assertEquals(result2.getAnswers().size(), 3);
         assertEquals(result2.getAnswers().stream().findFirst().get().getAnswerText(), "answer text 1");

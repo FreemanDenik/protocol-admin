@@ -5,6 +5,7 @@
     <title>Title</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
     <!--    <link rel="stylesheet"-->
     <!--          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">-->
     <style>
@@ -25,7 +26,7 @@
             font-weight: bold;
         }
 
-        .action {
+        .answer {
             padding-left: 20px;
         }
 
@@ -52,352 +53,315 @@
             <tr>
                 <td>
                     <div id="event-container" style="width: 700px;">
-                        <div>
-                            <h4>ID события</h4>
-                            <input id="event-id" class="form-control" th:value="${model.id}" readonly>
-                            <br/>
-                            <!-- Публикация -->
-                            <h4>Публикация</h4>
-                            <hr>
+                        <FORM id="form-save-cart">
                             <div>
-                                <input type="checkbox" id="publication"
-                                       th:checked="${model.publication}">
-                                <span>(Если отметить то, опубликовано)</span>
-                            </div>
-                            <!-- Многоразовая/Одноразовая -->
-                            <h4>Многоразовая/Одноразовая карточка</h4>
-                            <hr>
-                            <div>
-                                <input type="checkbox" id="use-once-cart"
-                                       th:checked="${model.useOnce}">
-                                <span>(Если отметить то, одноразовая карточка)</span>
-                            </div>
-                            <br/>
-                            <!-- Категория карточки -->
-                            <hr/>
-                            <div>
-                                <!-- Кнопки поиска/сброса категории -->
-                                <div style="text-align: right">
-                                    <label style="float: left; margin-top: 5px ">Категория карточки</label>
-                                    <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                             fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                             fill="currentColor" class="bi bi-arrow-counterclockwise"
-                                             viewBox="0 0 16 16">
-                                            <path fill-rule="evenodd"
-                                                  d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                                            <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                                        </svg>
-                                    </button>
+                                <h4>ID события</h4>
+                                <input id="event-id" class="form-control" th:value="${model.id}" readonly>
+                                <br/>
+                                <!-- Публикация -->
+                                <h4>Публикация</h4>
+                                <hr>
+                                <div>
+                                    <input type="checkbox" id="publication"
+                                           th:checked="${model.publication}">
+                                    <span>(Если отметить то, опубликовано)</span>
                                 </div>
-                                <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                <select id="category" class="form-control"
-                                        url="/finer/category"
-                                        th:default-size="${model.category == null} ? 4 : 5"
-                                        th:size="${model.category == null} ? 4 : 5">
-                                    <optgroup
-                                            label="Дефолт">
-                                        <option value="0" th:selected="${model.category == null}">
-                                            0. Общая категория
-                                        </option>
-                                    </optgroup>
-                                    <optgroup id="current-container"
-                                              label="Текущая категория">
-                                        <option th:if="${model.category != null}" th:value="${model.category.id}"
-                                                th:text="|${model.category.id}. ${model.category.title} ${model.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                th:title="${model.category.description}" selected></option>
-                                    </optgroup>
-                                    <optgroup id="checked-container"
-                                              label="Выбранная категория">
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <br/>
-                            <!-- Событие карточки -->
-                            <h4>Событие карточки</h4>
-                            <hr/>
-                            <div>
-                                <textarea id="event-text" th:text="${model.eventText}" class="form-control"
-                                          placeholder="Описать происходящее событие"></textarea>
-                            </div>
-                            <br/>
-                            <!-- Варианты ответов -->
-                            <h4>Варианты ответов</h4>
-                            <hr/>
-                            <th:block th:each="answer, iStat: ${model.answers}">
-                                <div class="action" id="action">
-                                    <h1 id="number">Ответ 1</h1>
-                                    <label>ID действия</label>
-                                    <input id="action-id" th:value="${answer.id}" class="form-control" readonly>
-                                    <!-- Многоразовый/Одноразовый ответ -->
-                                    <label>Многоразовый/Одноразовый ответ</label><br/>
-                                    <div>
-                                        <input id="use-once-answer" th:checked="${answer.useOnce}"
-                                               type="checkbox">
-                                        <span>(Если отметить то, одноразовый ответ)</span>
-                                    </div>
-                                    <label>Описание ответа</label>
-                                    <div>
-                                    <textarea id="answer-text" th:text="${answer.answerText}" class="form-control"
-                                              placeholder="Описать ответ и(или) действие"></textarea>
-                                    </div>
-                                    <!-- Игровые параметры определяющие конец игры -->
-                                    <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие
-                                        конец игры (от -100 до +100)</label>
-                                    <div>
-                                        <table>
-                                            <tr>
-                                                <td>
-                                                    <label>Золото</label>
-                                                    <input id="answer-gold" th:value="${answer.gold}" type="number"
-                                                           min="-100" max="100"
-                                                           class="form-control"
-                                                           placeholder="Золото">
-                                                </td>
-                                                <td>
-                                                    <label>Репутация</label>
-                                                    <input id="answer-reputation" th:value="${answer.reputation}"
-                                                           type="number" min="-100" max="100"
-                                                           class="form-control"
-                                                           placeholder="Репутация">
-                                                </td>
-                                                <td>
-                                                    <label>Влияние</label>
-                                                    <input id="answer-influence" th:value="${answer.influence}"
-                                                           type="number" min="-100" max="100"
-                                                           class="form-control"
-                                                           placeholder="Влияние">
-                                                </td>
-                                                <td>
-                                                    <label>Скрытность</label>
-                                                    <input id="answer-shadow" th:value="${answer.shadow}" type="number"
-                                                           min="-100" max="100"
-                                                           class="form-control"
-                                                           placeholder="Скрытность">
-                                                </td>
-                                                <td>
-                                                    <label>Удача</label>
-                                                    <input id="answer-luck" th:value="${answer.luck}" type="number"
-                                                           min="-100" max="100"
-                                                           class="form-control"
-                                                           placeholder="Удача">
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <!-- Доступно только если есть предметы  -->
-                                    <div>
-                                        <!-- Кнопки поиска/сброса предметы -->
-                                        <div style="text-align: right">
-                                            <label style="float: left; margin-top: 5px ">Ответ виден, но доступен только
-                                                если есть </label>
-                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                                </svg>
-                                            </button>
-                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-arrow-counterclockwise"
-                                                     viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                          d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <!-- Select отображения дефолтных/текущих/найденных предметов -->
-                                        <select id="if-things" class="form-control" multiple
-                                                url="/finer/thing"
-                                                th:default-size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}"
-                                                th:size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}">
-
-                                            <optgroup id="current-container"
-                                                      label="Текущие предметы">
-                                                <option th:each="i : ${answer.ifThings}"
-                                                        th:value="${i.id}"
-                                                        th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                        th:title="${i.description}"
-                                                        th:selected="true"></option>
-                                            </optgroup>
-                                            <optgroup id="checked-container"
-                                                      label="Выбранные предметы">
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <!-- Дать предметы  -->
-                                    <div>
-                                        <!-- Кнопки поиска/сброса предметы -->
-                                        <div style="text-align: right">
-                                            <label style="float: left; margin-top: 5px ">Дать предметы</label>
-                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                                </svg>
-                                            </button>
-                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-arrow-counterclockwise"
-                                                     viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                          d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <!-- Select отображения дефолтных/текущих/найденных предметов -->
-                                        <select id="give-things" class="form-control" multiple
-                                                url="/finer/thing"
-                                                th:default-size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}"
-                                                th:size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}">
-
-                                            <optgroup id="current-container"
-                                                      label="Текущие предметы">
-                                                <option th:each="i : ${answer.giveThings}"
-                                                        th:value="${i.id}"
-                                                        th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                        th:title="${i.description}"
-                                                        th:selected="true"></option>
-                                            </optgroup>
-                                            <optgroup id="checked-container"
-                                                      label="Выбранные предметы">
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <!-- Привязка карточки -->
-                                    <label>Привязка карточки</label><br/>
-                                    <div>
-                                        <input id="link-cart" type="hidden" value="0">
-                                        <button class="btn btn-warning">
-                                            Привязать
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
-                                                <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                                            </svg>
+                                <!-- Многоразовая/Одноразовая -->
+                                <h4>Многоразовая/Одноразовая карточка</h4>
+                                <hr>
+                                <div>
+                                    <input type="checkbox" id="use-once-cart"
+                                           th:checked="${model.useOnce}">
+                                    <span>(Если отметить то, одноразовая карточка)</span>
+                                </div>
+                                <br/>
+                                <!-- Категория карточки -->
+                                <h4>Категория карточки</h4>
+                                <hr/>
+                                <div>
+                                    <!-- Кнопки поиска/сброса категории -->
+                                    <div style="text-align: right">
+                                        <label style="float: left; margin-top: 5px ">Категория карточки</label>
+                                        <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                            <!-- Кнопка поиска элементов -->
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                            <!-- Кнопка очистить выбранные элементы -->
+                                            <i class="bi bi-arrow-counterclockwise"></i>
                                         </button>
                                     </div>
-                                    <!-- Открыть категорию карточек -->
-                                    <div>
-                                        <!-- Кнопки поиска/сброса категории -->
-                                        <div style="text-align: right">
-                                            <label style="float: left; margin-top: 5px ">Открыть категорию
-                                                карточек</label>
-                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                                </svg>
-                                            </button>
-                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-arrow-counterclockwise"
-                                                     viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                          d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                        <select id="open-categories" class="form-control" multiple
-                                                exclude-options="#close-categories"
-                                                url="/finer/category"
-                                                th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
-                                                th:size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}">
-
-                                            <optgroup id="current-container"
-                                                      label="Текущие категории">
-                                                <option th:each="i : ${answer.openCategories}"
-                                                        th:value="${i.id}"
-                                                        th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                        th:title="${i.description}"
-                                                        th:selected="true"></option>
-                                            </optgroup>
-                                            <optgroup id="checked-container"
-                                                      label="Выбранные категории">
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <!-- Закрыть категорию карточек -->
-                                    <div>
-                                        <!-- Кнопки поиска/сброса категории -->
-                                        <div style="text-align: right">
-                                            <label style="float: left; margin-top: 5px ">Закрыть категорию
-                                                карточек</label>
-                                            <button onclick="showModal(this)" type="button" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                                </svg>
-                                            </button>
-                                            <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                     fill="currentColor" class="bi bi-arrow-counterclockwise"
-                                                     viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                          d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                        <select id="close-categories" class="form-control" multiple
-                                                exclude-options="#open-categories"
-                                                url="/finer/category"
-                                                th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
-                                                th:size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}">
-
-                                            <optgroup id="current-container"
-                                                      label="Текущие категории">
-                                                <option th:each="i : ${answer.closeCategories}"
-                                                        th:value="${i.id}"
-                                                        th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                        th:title="${i.description}"
-                                                        th:selected="true"></option>
-                                            </optgroup>
-                                            <optgroup id="checked-container"
-                                                      label="Выбранные категории">
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
-                                            onclick='$(this).parent().remove()'>Удалить ответ
-                                    </button>
-                                    <hr style="background: 1px lightgrey"/>
+                                    <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                    <select id="category" class="form-control"
+                                            url="/finer/category"
+                                            th:default-size="${model.category == null} ? 4 : 5"
+                                            th:size="${model.category == null} ? 4 : 5">
+                                        <optgroup
+                                                label="Дефолт">
+                                            <option value="0" th:selected="${model.category == null}">
+                                                0. Общая категория
+                                            </option>
+                                        </optgroup>
+                                        <optgroup id="current-container"
+                                                  label="Текущая категория">
+                                            <option th:if="${model.category != null}" th:value="${model.category.id}"
+                                                    th:text="|${model.category.id}. ${model.category.title} ${model.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
+                                                    th:title="${model.category.description}" selected></option>
+                                        </optgroup>
+                                        <optgroup id="checked-container"
+                                                  label="Выбранная категория">
+                                        </optgroup>
+                                    </select>
                                 </div>
-                            </th:block>
-                            <button id="action-add-button" onclick="add()" class="btn btn-primary">
-                                Добавить ответ
+                                <br/>
+                                <!-- Событие карточки -->
+                                <h4>Событие карточки</h4>
+                                <hr/>
+                                <div>
+                                <textarea id="event-text" th:text="${model.eventText}" class="form-control"
+                                          placeholder="Описать происходящее событие" required></textarea>
+                                </div>
+                                <br/>
+                                <!-- Варианты ответов -->
+                                <h4>Варианты ответов</h4>
+                                <hr/>
+                                <th:block th:each="answer, iStat: ${model.answers}">
+                                    <div class="answer" id="answer">
+                                        <h2 id="number" th:text="|Порядковый номер ${iStat.index+1}|"></h2>
+                                        <label>ID действия</label>
+                                        <input id="answer-id" th:value="${answer.id}" class="form-control" readonly>
+                                        <!-- Многоразовый/Одноразовый ответ -->
+                                        <label>Многоразовый/Одноразовый ответ</label><br/>
+                                        <div>
+                                            <input id="use-once-answer" th:checked="${answer.useOnce}"
+                                                   type="checkbox">
+                                            <span>(Если отметить то, одноразовый ответ)</span>
+                                        </div>
+                                        <label>Описание ответа</label>
+                                        <div>
+                                    <textarea id="answer-text" th:text="${answer.answerText}" class="form-control"
+                                              placeholder="Описать ответ и(или) действие" required></textarea>
+                                        </div>
+                                        <!-- Игровые параметры определяющие конец игры -->
+                                        <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие
+                                            конец игры (от -100 до +100)</label>
+                                        <div>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <label>Золото</label>
+                                                        <input id="answer-gold" th:value="${answer.gold}" type="number"
+                                                               min="-100" max="100"
+                                                               class="form-control"
+                                                               placeholder="Золото">
+                                                    </td>
+                                                    <td>
+                                                        <label>Репутация</label>
+                                                        <input id="answer-reputation" th:value="${answer.reputation}"
+                                                               type="number" min="-100" max="100"
+                                                               class="form-control"
+                                                               placeholder="Репутация">
+                                                    </td>
+                                                    <td>
+                                                        <label>Влияние</label>
+                                                        <input id="answer-influence" th:value="${answer.influence}"
+                                                               type="number" min="-100" max="100"
+                                                               class="form-control"
+                                                               placeholder="Влияние">
+                                                    </td>
+                                                    <td>
+                                                        <label>Скрытность</label>
+                                                        <input id="answer-shadow" th:value="${answer.shadow}"
+                                                               type="number"
+                                                               min="-100" max="100"
+                                                               class="form-control"
+                                                               placeholder="Скрытность">
+                                                    </td>
+                                                    <td>
+                                                        <label>Удача</label>
+                                                        <input id="answer-luck" th:value="${answer.luck}" type="number"
+                                                               min="-100" max="100"
+                                                               class="form-control"
+                                                               placeholder="Удача">
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <!-- Привязка карточки -->
+                                        <label>Привязка карточки</label><br/>
+                                        <div>
+                                            <button type="button" th:if="${answer.id > 0}" th:onclick="|saveCartAndLink(${answer.id})|" class="btn btn-primary">
+                                                Создать и привязать
+                                                <i class="bi bi-link"></i>
+                                            </button>
+                                            <label th:if="${answer.id == 0}">Ответ надо сохранить</label>
 
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-clipboard-plus" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd"
-                                          d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z"/>
-                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
-                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
-                                </svg>
-                            </button>
-                            <br/>
-                            <br/>
-                            <button id="save-and-edit-button" onclick="save()" class="btn btn-success">
+                                        </div>
+                                        <!-- Доступно только если есть предметы  -->
+                                        <div>
+                                            <!-- Кнопки поиска/сброса предметы -->
+                                            <div style="text-align: right">
+                                                <label style="float: left; margin-top: 5px ">Ответ виден, но доступен
+                                                    только
+                                                    если есть </label>
+                                                <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                    <!-- Кнопка поиска элементов -->
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button onclick="cleanModal(this)" type="button"
+                                                        class="btn btn-warning">
+                                                    <!-- Кнопка очистить выбранные элементы -->
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Select отображения дефолтных/текущих/найденных предметов -->
+                                            <select id="if-things" class="form-control" multiple
+                                                    url="/finer/thing"
+                                                    th:default-size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}"
+                                                    th:size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}">
 
-                                Сохранить и(или)
-                                редактировать
+                                                <optgroup id="current-container"
+                                                          label="Текущие предметы">
+                                                    <option th:each="i : ${answer.ifThings}"
+                                                            th:value="${i.id}"
+                                                            th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
+                                                            th:title="${i.description}"
+                                                            th:selected="true"></option>
+                                                </optgroup>
+                                                <optgroup id="checked-container"
+                                                          label="Выбранные предметы">
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <!-- Дать предметы  -->
+                                        <div>
+                                            <!-- Кнопки поиска/сброса предметы -->
+                                            <div style="text-align: right">
+                                                <label style="float: left; margin-top: 5px ">Дать предметы</label>
+                                                <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                    <!-- Кнопка поиска элементов -->
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button onclick="cleanModal(this)" type="button"
+                                                        class="btn btn-warning">
+                                                    <!-- Кнопка очистить выбранные элементы -->
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Select отображения дефолтных/текущих/найденных предметов -->
+                                            <select id="give-things" class="form-control" multiple
+                                                    url="/finer/thing"
+                                                    th:default-size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}"
+                                                    th:size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}">
 
+                                                <optgroup id="current-container"
+                                                          label="Текущие предметы">
+                                                    <option th:each="i : ${answer.giveThings}"
+                                                            th:value="${i.id}"
+                                                            th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
+                                                            th:title="${i.description}"
+                                                            th:selected="true"></option>
+                                                </optgroup>
+                                                <optgroup id="checked-container"
+                                                          label="Выбранные предметы">
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <!-- Открыть категорию карточек -->
+                                        <div>
+                                            <!-- Кнопки поиска/сброса категории -->
+                                            <div style="text-align: right">
+                                                <label style="float: left; margin-top: 5px ">Открыть категорию
+                                                    карточек</label>
+                                                <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                    <!-- Кнопка поиска элементов -->
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button onclick="cleanModal(this)" type="button"
+                                                        class="btn btn-warning">
+                                                    <!-- Кнопка очистить выбранные элементы -->
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                            <select id="open-categories" class="form-control" multiple
+                                                    exclude-options="#close-categories"
+                                                    url="/finer/category"
+                                                    th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
+                                                    th:size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}">
 
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-bookmark-check-fill" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd"
-                                          d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zm8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
-                                </svg>
-                            </button>
-                        </div>
+                                                <optgroup id="current-container"
+                                                          label="Текущие категории">
+                                                    <option th:each="i : ${answer.openCategories}"
+                                                            th:value="${i.id}"
+                                                            th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
+                                                            th:title="${i.description}"
+                                                            th:selected="true"></option>
+                                                </optgroup>
+                                                <optgroup id="checked-container"
+                                                          label="Выбранные категории">
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <!-- Закрыть категорию карточек -->
+                                        <div>
+                                            <!-- Кнопки поиска/сброса категории -->
+                                            <div style="text-align: right">
+                                                <label style="float: left; margin-top: 5px ">Закрыть категорию
+                                                    карточек</label>
+                                                <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                                    <!-- Кнопка поиска элементов -->
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button onclick="cleanModal(this)" type="button"
+                                                        class="btn btn-warning">
+                                                    <!-- Кнопка очистить выбранные элементы -->
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Select отображения дефолтных/текущих/найденных категории -->
+                                            <select id="close-categories" class="form-control" multiple
+                                                    exclude-options="#open-categories"
+                                                    url="/finer/category"
+                                                    th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
+                                                    th:size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}">
+
+                                                <optgroup id="current-container"
+                                                          label="Текущие категории">
+                                                    <option th:each="i : ${answer.closeCategories}"
+                                                            th:value="${i.id}"
+                                                            th:text="|${i.id}. ${i.title}  ${i.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
+                                                            th:title="${i.description}"
+                                                            th:selected="true"></option>
+                                                </optgroup>
+                                                <optgroup id="checked-container"
+                                                          label="Выбранные категории">
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
+                                                onclick='$(this).parent().remove()'>
+                                            <!-- Кнопка удалить -->
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                        <hr style="background: 1px lightgrey"/>
+                                    </div>
+                                </th:block>
+                                <button id="answer-add-button" type="button" onclick="add()" class="btn btn-primary">
+                                    Добавить ответ
+                                    <i class="bi bi-file-text"></i>
+                                </button>
+                                <br/>
+                                <br/>
+                                <!-- onclick="save()" -->
+                                <button onclick="saveCart()" type="button"
+                                        class="btn btn-success">
+                                    Сохранить и(или)
+                                    редактировать
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </FORM>
                     </div>
                 </td>
                 <td style="vertical-align: text-top; padding-left: 50px;">
@@ -458,6 +422,7 @@
 
 <script>
     let TRIGGER_MODAL_BUTTON;
+    let LINK_ANSWER = 0;
 
     // Сохранения выбранных пунктов в модальном окне на карту события
     function saveSelectedInEvent(obj) {
@@ -517,8 +482,67 @@
         // Открываем модальное окно
         $('#categoryModal').modal('show');
     }
-
+    // Создать карточку с указанием id в LINK_ANSWER
+    // что говорит о том что надо создать связку с указанным Answer
+    // т.е. сохранить текущую карту и сразу создать новую и указать ссылку на указанным Answer
+    function saveCartAndLink(linkAnswer){
+        LINK_ANSWER = linkAnswer
+        $('#form-save-cart').submit();
+    }
+    // Просто сохранить карту
+    function saveCart(){
+        LINK_ANSWER = 0
+        $('#form-save-cart').submit();
+    }
     $(function () {
+        // Событие (submit) сохранение карторчки
+        $('#form-save-cart').on('submit', async function (e) {
+            e.preventDefault();
+            let event = {
+                id: $('#event-id').val(),
+                publication: $('#publication').is(":checked"),
+                useOnce: $('#use-once-cart').is(":checked"),
+                category: {
+                    id: $('#category').val()
+                },
+                eventText: $('#event-text').val(),
+                answers: []
+            }
+            $.each($('.answer'), function (key, answer) {
+                // let openCategories = $(action).find('#open-categories').val().map(id => ({id: id}));
+                // let closeCategories = $(action).find('#close-categories').val().map(id => ({id: id}));
+                // let giveThings = $(action).find('#give-things').val().map(id => ({id: id}));
+                // let ifThings = $(action).find('#if-things').val().map(id => ({id: id}));
+                event.answers.push({
+                    id: $(answer).find('#answer-id').val(),
+                    useOnce: $(answer).find('#use-once-answer').is(":checked"),
+                    answerText: $(answer).find('#answer-text').val(),
+                    gold: $(answer).find('#answer-gold').val(),
+                    reputation: $(answer).find('#answer-reputation').val(),
+                    influence: $(answer).find('#answer-influence').val(),
+                    shadow: $(answer).find('#answer-shadow').val(),
+                    luck: $(answer).find('#answer-luck').val(),
+                    giveThings: $(answer).find('#give-things').val().map(id => ({id: id})),
+                    ifThings: $(answer).find('#if-things').val().map(id => ({id: id})),
+                    link: $(answer).find('#link-cart').val(),
+                    openCategories: $(answer).find('#open-categories').val().map(id => ({id: id})),
+                    closeCategories: $(answer).find('#close-categories').val().map(id => ({id: id}))
+                })
+            })
+            console.log(event);
+            let data = await fetch('/communication/event?answerId='+LINK_ANSWER, {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            })
+            if (data.status == 200) {
+                let eventId = await data.json();
+                location.href = '/communication/event?id=' + eventId;
+            }
+        })
+        // Событие поиска подгружаемых данных (категория и предметы)
         $('#finder-category').on('keyup', async function () {
             // название категории или ее часть (для поиска)
             let search = $(this).val();
@@ -537,7 +561,7 @@
             // Т.е., исключаем пункты другого select, если такой select указан в атрибутах exclude-options
             let excludes =
                 excludeOptions !== undefined
-                    ? TRIGGER_MODAL_BUTTON.closest('.action').find(excludeOptions).find('option').map((key, elm) => elm.value).toArray()
+                    ? TRIGGER_MODAL_BUTTON.closest('.answer').find(excludeOptions).find('option').map((key, elm) => elm.value).toArray()
                     : [];
             // Добавляем массив исключений формируется из select текущих категории (options)
             // Чтобы не отображать текущие категории
@@ -588,7 +612,6 @@
     function isPublicationString(publication) {
         return publication ? "(Опубликовано)" : "(Не опубликовано)";
     }
-
     // Метод выбора из коллекции подгружаемых элементов
     function checkCategory(obj, fastFiner, isMultiply) {
         // Получаем контейнер выбранных элементов модального окна
@@ -619,88 +642,25 @@
         //  $(obj).closest('div.modal-content').find('select').attr('size', size);
     }
 
-    async function save() {
-        let event = {
-            id: $('#event-id').val(),
-            publication: $('#publication').is(":checked"),
-            useOnce: $('#use-once-cart').is(":checked"),
-            category: {
-                id: $('#category').val()
-            },
-            eventText: $('#event-text').val(),
-            answers: []
-        }
-        $.each($('.action'), function (actionNum, action) {
-            let openCategories = $(action).find('#open-categories').val().map(id => ({
-                id: id
-            }));
-            let closeCategories = $(action).find('#close-categories').val().map(id => ({
-                id: id
-            }));
-            let giveThings = $(action).find('#give-things').val().map(id => ({
-                id: id
-            }));
-            let ifThings = $(action).find('#if-things').val().map(id => ({
-                id: id
-            }));
-
-            // $.each($(action).find('#close-categories').val(), function (closeCategoryNum, closeCategoryId) {
-            //     closeCategories.push({
-            //         id: closeCategoryId
-            //     })
-            // })
-            event.answers.push({
-                id: $(action).find('#action-id').val(),
-                useOnce: $(action).find('#use-once-answer').is(":checked"),
-                answerText: $(action).find('#answer-text').val(),
-                gold: $(action).find('#answer-gold').val(),
-                reputation: $(action).find('#answer-reputation').val(),
-                influence: $(action).find('#answer-influence').val(),
-                shadow: $(action).find('#answer-shadow').val(),
-                luck: $(action).find('#answer-luck').val(),
-                giveThings: giveThings,
-                ifThings: ifThings,
-                link: $(action).find('#link-cart').val(),
-                openCategories: openCategories,
-                closeCategories: closeCategories
-            })
-        })
-        console.log(event);
-
-        let data = await fetch('/communication/event', {
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(event)
-        })
-        if (data.status == 200) {
-            let eventId = await data.json();
-            location.href = '/communication/event?id=' + eventId;
-        }
-    }
 
     function add() {
         let eventContainer = $('#event-container');
-        let action = eventContainer.find('#action').clone();
-        action.find('input, textarea').val('');
-        action.find('select option').remove();
-        action.find('input#action-id').val('0')
-        action.find("hr").before("<button class='btn btn-danger' style='float: right' onclick='remove(this)'><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-trash\" viewBox=\"0 0 16 16\">\n" +
-            "  <path d=\"M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z\"/>\n" +
-            "  <path fill-rule=\"evenodd\" d=\"M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z\"/>\n" +
-            "</svg></button><hr/>");
-        eventContainer.find('#action-add-button').before(action);
-        $('.action').each(function (key, elm) {
-            $(elm).find('h1#number').text("Ответ " + (key + 1));
+        let answer = eventContainer.find('#answer').clone();
+        answer.find('input, textarea').val('');
+        answer.find('select option').remove();
+        answer.find('input#answer-id').val('0')
+        answer.find("hr").before("<button class='btn btn-danger' style='float: right' onclick='remove(this)'><i class='bi bi-trash3-fill'></i></button><hr/>");
+        eventContainer.find('#answer-add-button').before(answer);
+        $('.answer').each(function (key, elm) {
+            $(elm).find('h2#number').text("Порядковый номер  " + (key + 1));
         })
     }
 
     function remove(obj) {
         if (confirm("Удалить?")) {
-            $(obj).closest('.action').remove();
-            $('.action').each(function (key, elm) {
-                $(elm).find('h1#number').text("Ответ " + (key + 1));
+            $(obj).closest('.answer').remove();
+            $('.answer').each(function (key, elm) {
+                $(elm).find('h2#number').text("Порядковый номер  " + (key + 1));
             })
         }
     }

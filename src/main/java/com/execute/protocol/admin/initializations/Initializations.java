@@ -42,7 +42,7 @@ public class Initializations {
         thingRepository.saveAll(
                 List.of(
                         Thing.builder().title("Серебряная монета золото +20").description("описание Серебряная монета спасает от полного банкродства").target(EmTarget.GOLD).count(20).build(),
-                        Thing.builder().title("Не приятный случей влияние -50").description("описание Не приятный случей влияние -50").target(EmTarget.INFLUENCE).count(-50).build(),
+                        Thing.builder().title("Глупая шутка -50").description("описание Не приятный случей влияние -50").target(EmTarget.INFLUENCE).count(-50).build(),
                         Thing.builder().title("Поддержка окружающих репутация +1").description("описание Поддержка окружающих репутация +1").target(EmTarget.REPUTATION).count(1).build()
                 )
         );

@@ -26,8 +26,16 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
+    /**
+     * Опубликована ли карта
+     */
     @Column
     private boolean publication;
+    /**
+     * Является ли карта дочерней
+     */
+    @Column
+    private boolean child;
     @Column
     private boolean useOnce;
     @Column
@@ -48,23 +56,24 @@ public class Event {
     @OneToMany(
             mappedBy = "event",
             fetch = FetchType.EAGER,
-            targetEntity = Answer.class,
-            orphanRemoval = true,
-            cascade= {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @OrderBy( "id ASC" )
+            cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH},
+            orphanRemoval = true)
+    //Если orphanRemoval=true, то при удалении комментария из списка комментариев топика, комментарий удаляется из базы
+    //Если orphanRemoval=false, то при удалении комментария из списка, в базе комментарий остается.  Просто его внешний ключ (comment.topic_id) обнуляется, и  больше комментарий не ссылается на топик.
+    @OrderBy("id ASC")
     private Set<Answer> answers = new LinkedHashSet<>();
-//    public Set<Answer> getAnswers(){
-//        return answers.stream().sorted(Comparator.comparingInt(Answer::getId)).collect(Collectors.toCollection(LinkedHashSet::new));
-//    }
+
     public void addAnswer(Answer answer) {
         answers.add(answer);
         answer.setEvent(this);
     }
+
     public void removeAnswer(Answer answer) {
         answers.remove(answer);
         answer.setEvent(null);
     }
-    public void syncAnswers(){
-        answers.forEach(w->w.setEvent(this));
+
+    public void syncAnswers() {
+        answers.forEach(w -> w.setEvent(this));
     }
 }

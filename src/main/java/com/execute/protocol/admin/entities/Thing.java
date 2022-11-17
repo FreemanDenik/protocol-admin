@@ -20,6 +20,9 @@ public class Thing implements FastFiner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
+    /**
+     * Опубликован ли предмет
+     */
     @Column
     private boolean publication;
     @Column
