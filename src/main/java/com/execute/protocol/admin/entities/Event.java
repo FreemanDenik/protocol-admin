@@ -34,6 +34,10 @@ public class Event {
     /**
      * Является ли карта дочерней
      */
+    @Column(name = "main_parent")
+    private int mainParent;
+    @Column(name = "own_parent")
+    private int ownParent;
     @Column
     private boolean child;
     @Column

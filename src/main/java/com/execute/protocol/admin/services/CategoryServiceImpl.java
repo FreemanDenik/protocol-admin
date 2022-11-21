@@ -24,6 +24,9 @@ public class CategoryServiceImpl implements CategoryService, FastFinerService<Ca
         this.categoryRepository = categoryRepository;
     }
 
+    public Category getCategory(int categoryId){
+        return categoryRepository.findById(categoryId).get();
+    }
     /**
      * Получаем результаты по поиску части названия,
      * а так же отфильтровываем уже существующие и пагинируем ответ
@@ -34,7 +37,6 @@ public class CategoryServiceImpl implements CategoryService, FastFinerService<Ca
      * @param pageSize количество записей на странице
      * @return
      */
-
     public Page<? extends FastFiner> getBySearchAndWithExcludes(
             String search,
             Set<Integer> excludes,

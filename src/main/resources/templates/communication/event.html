@@ -80,7 +80,7 @@
                                 <hr/>
                                 <div>
                                     <!-- Кнопки поиска/сброса категории -->
-                                    <div style="text-align: right">
+                                    <div th:if="${model.child == false}" style="text-align: right">
                                         <label style="float: left; margin-top: 5px ">Категория карточки</label>
                                         <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                             <!-- Кнопка поиска элементов -->
@@ -95,20 +95,22 @@
                                     <select id="category" class="form-control"
                                             url="/finer/category"
                                             th:default-size="${model.category == null} ? 4 : 5"
-                                            th:size="${model.category == null} ? 4 : 5">
-                                        <optgroup
-                                                label="Дефолт">
+                                            th:size="${model.child ? 2 : (model.category == null ? 4 : 5)}">
+                                        <optgroup th:if="${model.child == false || model.category == null}"
+                                                  label="Дефолт">
                                             <option value="0" th:selected="${model.category == null}">
                                                 0. Общая категория
                                             </option>
                                         </optgroup>
                                         <optgroup id="current-container"
-                                                  label="Текущая категория">
+                                                  label="Текущая категория"
+                                                  th:if="${model.child == false || model.child == true && model.category != null}">
+
                                             <option th:if="${model.category != null}" th:value="${model.category.id}"
                                                     th:text="|${model.category.id}. ${model.category.title} ${model.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
                                                     th:title="${model.category.description}" selected></option>
                                         </optgroup>
-                                        <optgroup id="checked-container"
+                                        <optgroup th:if="${model.child == false}" id="checked-container"
                                                   label="Выбранная категория">
                                         </optgroup>
                                     </select>
@@ -190,7 +192,9 @@
                                         <!-- Привязка карточки -->
                                         <label>Привязка карточки</label><br/>
                                         <div>
-                                            <button type="button" th:if="${answer.id > 0}" th:onclick="|saveCartAndLink(${answer.id})|" class="btn btn-primary">
+                                            <button type="button" th:if="${answer.id > 0}"
+                                                    th:onclick="|saveCartAndLink(${answer.id})|"
+                                                    class="btn btn-primary">
                                                 Создать и привязать
                                                 <i class="bi bi-link"></i>
                                             </button>
@@ -351,13 +355,16 @@
                                     Добавить ответ
                                     <i class="bi bi-file-text"></i>
                                 </button>
-                                <br/>
-                                <br/>
-                                <!-- onclick="save()" -->
+                                <br/><br/>
                                 <button onclick="saveCart()" type="button"
                                         class="btn btn-success">
-                                    Сохранить и(или)
-                                    редактировать
+                                    Сохранить/Изменить
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <br/><br/>
+                                <button onclick="saveCart(true)" type="button"
+                                        class="btn btn-success">
+                                    Сохранить/Изменить и создать новую карту в той же категории
                                     <i class="bi bi-plus-circle"></i>
                                 </button>
                             </div>
@@ -422,7 +429,8 @@
 
 <script>
     let TRIGGER_MODAL_BUTTON;
-    let LINK_ANSWER = 0;
+    let POST_URL_QUERY = "";
+    let GET_URL_QUERY = "";
 
     // Сохранения выбранных пунктов в модальном окне на карту события
     function saveSelectedInEvent(obj) {
@@ -482,18 +490,23 @@
         // Открываем модальное окно
         $('#categoryModal').modal('show');
     }
-    // Создать карточку с указанием id в LINK_ANSWER
+
+    // Создать карточку с указанием id в POST_URL_QUERY = '?answerId='+answerId;
     // что говорит о том что надо создать связку с указанным Answer
     // т.е. сохранить текущую карту и сразу создать новую и указать ссылку на указанным Answer
-    function saveCartAndLink(linkAnswer){
-        LINK_ANSWER = linkAnswer
+    function saveCartAndLink(answerId) {
+        POST_URL_QUERY = '?answerId='+answerId;
         $('#form-save-cart').submit();
     }
-    // Просто сохранить карту
-    function saveCart(){
-        LINK_ANSWER = 0
+
+    // Сохранить карту если saveCart(true), то после сохранения создать новую карту в той же категории
+    function saveCart(isSaveCategory) {
+        if (isSaveCategory){
+            GET_URL_QUERY = '?categoryId='+$('#category').val();
+        }
         $('#form-save-cart').submit();
     }
+
     $(function () {
         // Событие (submit) сохранение карторчки
         $('#form-save-cart').on('submit', async function (e) {
@@ -530,7 +543,7 @@
                 })
             })
             console.log(event);
-            let data = await fetch('/communication/event?answerId='+LINK_ANSWER, {
+            let data = await fetch('/communication/event' + POST_URL_QUERY, {
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json'
@@ -539,7 +552,13 @@
             })
             if (data.status == 200) {
                 let eventId = await data.json();
-                location.href = '/communication/event?id=' + eventId;
+                if(GET_URL_QUERY == ""){
+                    GET_URL_QUERY = '?eventId='+eventId;
+                }
+                location.href = '/communication/event' + GET_URL_QUERY ;
+            }else {
+                GET_URL_QUERY = "";
+                POST_URL_QUERY = "";
             }
         })
         // Событие поиска подгружаемых данных (категория и предметы)
@@ -612,6 +631,7 @@
     function isPublicationString(publication) {
         return publication ? "(Опубликовано)" : "(Не опубликовано)";
     }
+
     // Метод выбора из коллекции подгружаемых элементов
     function checkCategory(obj, fastFiner, isMultiply) {
         // Получаем контейнер выбранных элементов модального окна

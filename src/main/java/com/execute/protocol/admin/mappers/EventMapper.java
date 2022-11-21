@@ -13,8 +13,6 @@ import org.mapstruct.factory.Mappers;
  * т.е. в процессе работы подтягиваются данные из БД
  */
 @Mapper(componentModel = "spring",
-        //injectionStrategy = InjectionStrategy.FIELD,
-
         uses = EventTranslator.class)
 public interface EventMapper {
     //EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
@@ -33,6 +31,7 @@ public interface EventMapper {
      * @return {@link Event}
      */
 
+
     Event mapEventFromDto(EventDto eventDto);
 
     /**
@@ -40,6 +39,9 @@ public interface EventMapper {
      * @param eventDto {@link EventDto}
      * @param event {@link Event}
      */
+    @Mapping(target = "child", ignore = true)
+    @Mapping(target = "mainParent", ignore = true)
+    @Mapping(target = "ownParent", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void mapUpdateEventFromDto(EventDto eventDto, @MappingTarget Event event);
 }

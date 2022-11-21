@@ -2,18 +2,23 @@ package com.execute.protocol.admin.services;
 
 import com.execute.protocol.admin.entities.Answer;
 import com.execute.protocol.admin.entities.Event;
+import com.execute.protocol.admin.entities.QEvent;
 import com.execute.protocol.admin.mappers.EventMapper;
 import com.execute.protocol.admin.repositories.AnswerRepository;
 import com.execute.protocol.admin.repositories.CategoryRepository;
 import com.execute.protocol.admin.repositories.EventRepository;
+import com.execute.protocol.dto.EventDto;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -22,51 +27,115 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
 
+    private final EntityManager entityManager;
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, AnswerRepository answerRepository, CategoryRepository categoryRepository, EventMapper eventMapper) {
+    public EventServiceImpl(EventRepository eventRepository, AnswerRepository answerRepository, CategoryRepository categoryRepository, EventMapper eventMapper, EntityManager entityManager) {
         this.eventRepository = eventRepository;
         this.answerRepository = answerRepository;
         this.categoryRepository = categoryRepository;
         this.eventMapper = eventMapper;
+        this.entityManager = entityManager;
     }
 
     /**
      * Сохранить событие
-     *
      * @param event сущность событие
+     * @return Event
      */
-    public void save(Event event) {
-        // Метод syncAnswers добавляет всем answers
-        // Родительский метод Event
-
+    public Event save(Event event){
+        event.setCreateTime(LocalDateTime.now());
+        event.setUpdateTime(LocalDateTime.now());
         event.syncAnswers();
         eventRepository.save(event);
-        //answerRepository.saveAll(event.getAnswers());
-
+        return event;
     }
 
-    public int save(Event event, int answerId) {
-        // Метод syncAnswers добавляет всем answers
-        // Родительский метод Event
-        Set<Answer> answers = new LinkedHashSet<>(Arrays.asList(
-                Answer.builder().answerText("-- Текст первого ответа --")
-                        .ifThings(new HashSet<>())
-                        .giveThings(new HashSet<>())
-                        .openCategories(new HashSet<>())
-                        .closeCategories(new HashSet<>())
-                        .build()
-        ));
+    /**
+     * Сохранить событие из {@link EventDto} модели,
+     * преобразование mapstruct
+     * @param eventDto
+     * @return Event
+     */
+    public Event saveFromDto(EventDto eventDto) {
+        Event event = eventMapper.mapEventFromDto(eventDto);
+
+        // Задаем время создания
+        event.setCreateTime(LocalDateTime.now());
+        event.setUpdateTime(LocalDateTime.now());
+        event.syncAnswers();
+        eventRepository.save(event);
+        return event;
+    }
+
+    /**
+     * Обновить модель {@link Event} данными из модели {@link EventDto}<br>
+     * преобразование mapstruct<br>
+     * В процессе удаляются или добавляются {@link Answer}<br>
+     * Так же обновляются категории связанных (сюжетной связкой parent child) сущности {@link Event}
+     * @param eventDto
+     * @return Event
+     */
+    @Transactional
+    public Event updateFromDto(EventDto eventDto) {
+       Event event = this.getEvent(eventDto.getId());
+       int categoryId = event.getCategory();
+        // Удаление из Event.Answer записей которых нет в EventDto.AnswerDto
+        // выражение использовать до Mapper преобразовании
+        event.getAnswers()
+                .stream()
+                .filter(w ->
+                        !eventDto.getAnswers().stream().mapToInt(e -> e.getId())
+                                .boxed().collect(Collectors.toSet())
+                                .contains(w.getId()))
+                .collect(Collectors.toSet())
+                .forEach(event::removeAnswer);
+        // Обновление (преобразование mapstruct) event данными из eventDto
+        eventMapper.mapUpdateEventFromDto(eventDto, event);
+        event.setUpdateTime(LocalDateTime.now());
+        // Синхронизация Answer записей с Event
+        event.syncAnswers();
+        eventRepository.save(event);
+        // Если при обновлении была изменена категория то,
+        // меняется категория всех связанных (сюжетной связкой parent child) сущностей Event
+        if (categoryId != event.getCategory()){
+            Set<Event> result = eventRepository.findByCategoryAndChild(categoryId, true);
+            if (!result.isEmpty()) {
+                result.forEach(w -> w.setCategory(event.getCategory()));
+                eventRepository.saveAll(result);
+            }
+        }
+        return event;
+    }
+
+    /**
+     * Создание пустого события {@link Event} с
+     * привязкой его к ответу {@link Answer} переданного (по сути предыдущего) {@link Event}
+     * @param event событие к котором находиться целевой ответ Answer
+     * @param answerId id ответа
+     * @return
+     */
+    @Transactional
+    public int saveAndCreateEventLink(Event event, int answerId) {
         Event newEvent = Event.builder()
+                .category(event.getCategory())
+                .mainParent(event.getMainParent() == 0 ? event.getId() : event.getMainParent())
+                .ownParent(event.getId())
+                .child(true)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .eventText("-- Новое связанное событие --")
                 .answers(
-                        answers
+                        new LinkedHashSet<>(Arrays.asList(
+                                Answer.builder().answerText("-- Текст первого ответа --")
+
+                                        .ifThings(new HashSet<>())
+                                        .giveThings(new HashSet<>())
+                                        .openCategories(new HashSet<>())
+                                        .closeCategories(new HashSet<>())
+                                        .build()
+                        ))
                 ).build();
-        newEvent.syncAnswers();
-        answerRepository.saveAll(answers);
-        eventRepository.save(newEvent);
-        //answerRepository.saveAll(newEvent.getAnswers());
+        save(newEvent);
         event.getAnswers().stream().filter(w -> w.getId() == answerId).findFirst().get().setLink(newEvent.getId());
         save(event);
         return newEvent.getId();

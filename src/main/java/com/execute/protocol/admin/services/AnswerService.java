@@ -11,6 +11,5 @@ import java.util.Set;
 public interface AnswerService {
     void saveAll(List<Answer> answers);
     void remove(List<Integer> answers);
-    void deleteAnswersInDtoDifferent(Set<AnswerDto> answersDto, Set<Answer> answers);
     Set<Answer> getAnswers(int eventId);
 }
