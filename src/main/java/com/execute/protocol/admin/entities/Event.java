@@ -2,16 +2,13 @@ package com.execute.protocol.admin.entities;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.domain.Sort;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -32,12 +29,23 @@ public class Event {
     @Column
     private boolean publication;
     /**
-     * Является ли карта дочерней
+     * Главный родительское событие (с которого начинается сюжет)
      */
     @Column(name = "main_parent")
-    private int mainParent;
+    private int parentEvent;
+    /**
+     * Не посредственно родительское событие
+     */
     @Column(name = "own_parent")
-    private int ownParent;
+    private int ownEvent;
+    /**
+     * Ответ который приводт к этому событию
+     */
+    @Column(name = "own_answer")
+    private int ownAnswer;
+    /**
+     * Является ли карта дочерней
+     */
     @Column
     private boolean child;
     @Column

@@ -2,19 +2,15 @@ package com.execute.protocol.admin.services;
 
 import com.execute.protocol.admin.entities.Answer;
 import com.execute.protocol.admin.entities.Event;
-import com.execute.protocol.admin.entities.QEvent;
 import com.execute.protocol.admin.mappers.EventMapper;
 import com.execute.protocol.admin.repositories.AnswerRepository;
 import com.execute.protocol.admin.repositories.CategoryRepository;
 import com.execute.protocol.admin.repositories.EventRepository;
 import com.execute.protocol.dto.EventDto;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -118,8 +114,9 @@ public class EventServiceImpl implements EventService {
     public int saveAndCreateEventLink(Event event, int answerId) {
         Event newEvent = Event.builder()
                 .category(event.getCategory())
-                .mainParent(event.getMainParent() == 0 ? event.getId() : event.getMainParent())
-                .ownParent(event.getId())
+                .parentEvent(event.getParentEvent() == 0 ? event.getId() : event.getParentEvent())
+                .ownEvent(event.getId())
+                .ownAnswer(answerId)
                 .child(true)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())

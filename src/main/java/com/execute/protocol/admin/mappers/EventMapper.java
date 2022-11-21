@@ -40,8 +40,9 @@ public interface EventMapper {
      * @param event {@link Event}
      */
     @Mapping(target = "child", ignore = true)
-    @Mapping(target = "mainParent", ignore = true)
-    @Mapping(target = "ownParent", ignore = true)
+    @Mapping(target = "parentEvent", ignore = true)
+    @Mapping(target = "ownEvent", ignore = true)
+    @Mapping(target = "ownAnswer", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void mapUpdateEventFromDto(EventDto eventDto, @MappingTarget Event event);
 }
