@@ -2,14 +2,11 @@ package com.execute.protocol.admin.entities;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -24,9 +21,10 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private int id;
-    @NotNull
     @Column(name = "use_once")
     private boolean useOnce;
+    @NotBlank
+    @NotNull
     @EqualsAndHashCode.Include
     @Column(name = "answer_text", nullable = false)
     private String answerText;
@@ -51,7 +49,7 @@ public class Answer {
     @CollectionTable(name = "TEMP_IF_THINGS")
     private Set<Integer> ifThings;
     @Column
-    private int link;
+    private int linkEvent;
     @Column(name = "open_categories")
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_OPEN_CATEGORIES")

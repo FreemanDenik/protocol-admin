@@ -12,7 +12,9 @@
         .display-none {
             display: none;
         }
-
+        optgroup{
+            font-weight: 500;
+        }
         .div-collapse {
             position: absolute;
             height: 1px;
@@ -53,40 +55,35 @@
             <tr>
                 <td>
                     <div id="event-container" style="width: 700px;">
-                        <FORM id="form-save-cart">
+                        <FORM id="form-save-event">
                             <div>
                                 <h4>ID события</h4>
                                 <input id="event-id" class="form-control" th:value="${model.id}" readonly>
                                 <br/>
                                 <!-- Публикация -->
-                                <h4>Публикация</h4>
-                                <hr>
                                 <div>
                                     <input type="checkbox" id="publication"
                                            th:checked="${model.publication}">
-                                    <span>(Если отметить то, опубликовано)</span>
+                                    <label>Публикация (Если отметить то, опубликовано)</label>
                                 </div>
                                 <!-- Многоразовая/Одноразовая -->
-                                <h4>Многоразовая/Одноразовая карточка</h4>
                                 <hr>
                                 <div>
-                                    <input type="checkbox" id="use-once-cart"
-                                           th:checked="${model.useOnce}">
-                                    <span>(Если отметить то, одноразовая карточка)</span>
+                                    <input id="use-once-event" type="checkbox" th:checked="${model.useOnce}">
+                                    <label>Многоразовая/Одноразовая карточка (Если отметить то, одноразовая карточка)</label>
                                 </div>
                                 <br/>
-                                <!-- Категория карточки -->
-                                <h4>Категория карточки</h4>
-                                <hr/>
-                                <div>
-                                    <!-- Кнопки поиска/сброса категории -->
-                                    <div th:if="${model.child == false}" style="text-align: right">
-                                        <label style="float: left; margin-top: 5px ">Категория карточки</label>
+                                <!-- Категория события -->
+                                <div style="text-align: right">
+                                    <!-- Кнопки поиска/сброса события -->
+                                    <label style="float: left; margin-top: 5px ">Категория события</label>
+                                    <div class="btn-group" th:if="${model.child == false}">
                                         <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                             <!-- Кнопка поиска элементов -->
                                             <i class="bi bi-search"></i>
                                         </button>
-                                        <button onclick="cleanModal(this)" type="button" class="btn btn-warning">
+                                        <button onclick="cleanModal(this)" type="button"
+                                                class="btn btn-outline-primary">
                                             <!-- Кнопка очистить выбранные элементы -->
                                             <i class="bi bi-arrow-counterclockwise"></i>
                                         </button>
@@ -98,7 +95,7 @@
                                             th:size="${model.child ? 2 : (model.category == null ? 4 : 5)}">
                                         <optgroup th:if="${model.child == false || model.category == null}"
                                                   label="Дефолт">
-                                            <option value="0" th:selected="${model.category == null}">
+                                            <option th:selected="${model.category == null}" value="0">
                                                 0. Общая категория
                                             </option>
                                         </optgroup>
@@ -108,118 +105,134 @@
 
                                             <option th:if="${model.category != null}" th:value="${model.category.id}"
                                                     th:text="|${model.category.id}. ${model.category.title} ${model.publication ? '(Опубликовано)' : '(Не Опубликовано)'}|"
-                                                    th:title="${model.category.description}" selected></option>
+                                                    th:title="${model.category.description}"
+                                                    selected></option>
                                         </optgroup>
-                                        <optgroup th:if="${model.child == false}" id="checked-container"
-                                                  label="Выбранная категория">
+                                        <optgroup id="checked-container"
+                                                  label="Выбранная категория"
+                                                  th:if="${model.child == false}">
                                         </optgroup>
                                     </select>
                                 </div>
                                 <br/>
                                 <!-- Событие карточки -->
-                                <h4>Событие карточки</h4>
-                                <hr/>
+                                <label>Текст событие</label>
                                 <div>
-                                <textarea id="event-text" th:text="${model.eventText}" class="form-control"
-                                          placeholder="Описать происходящее событие" required></textarea>
+                                <textarea id="event-text"
+                                          class="form-control"
+                                          th:text="${model.eventText}"
+                                          placeholder="Описать происходящее событие"
+                                          required></textarea>
                                 </div>
                                 <br/>
                                 <!-- Варианты ответов -->
                                 <h4>Варианты ответов</h4>
                                 <hr/>
                                 <th:block th:each="answer, iStat: ${model.answers}">
-                                    <div class="answer" id="answer">
+                                    <div id="answer" class="answer">
                                         <h2 id="number" th:text="|Порядковый номер ${iStat.index+1}|"></h2>
                                         <label>ID действия</label>
-                                        <input id="answer-id" th:value="${answer.id}" class="form-control" readonly>
+                                        <input id="answer-id" class="form-control" th:value="${answer.id}" readonly>
                                         <!-- Многоразовый/Одноразовый ответ -->
-                                        <label>Многоразовый/Одноразовый ответ</label><br/>
+                                        <br/>
                                         <div>
                                             <input id="use-once-answer" th:checked="${answer.useOnce}"
                                                    type="checkbox">
-                                            <span>(Если отметить то, одноразовый ответ)</span>
+                                            <label>Многоразовый/Одноразовый ответ (Если отметить то, одноразовый ответ)</label>
                                         </div>
                                         <label>Описание ответа</label>
                                         <div>
-                                    <textarea id="answer-text" th:text="${answer.answerText}" class="form-control"
+                                    <textarea id="answer-text" class="form-control" th:text="${answer.answerText}"
                                               placeholder="Описать ответ и(или) действие" required></textarea>
                                         </div>
                                         <!-- Игровые параметры определяющие конец игры -->
-                                        <label style="border-bottom: 1px solid lightgrey">Игровые параметры определяющие
-                                            конец игры (от -100 до +100)</label>
+                                        <label style="border-bottom: 1px solid lightgrey">
+                                            Игровые параметры определяющие конец игры (от -100 до +100)</label>
                                         <div>
                                             <table>
                                                 <tr>
                                                     <td>
                                                         <label>Золото</label>
-                                                        <input id="answer-gold" th:value="${answer.gold}" type="number"
-                                                               min="-100" max="100"
+                                                        <input id="answer-gold"
                                                                class="form-control"
+                                                               th:value="${answer.gold}"
+                                                               type="number" min="-100" max="100"
                                                                placeholder="Золото">
                                                     </td>
                                                     <td>
                                                         <label>Репутация</label>
-                                                        <input id="answer-reputation" th:value="${answer.reputation}"
+                                                        <input id="answer-reputation" class="form-control"
+                                                               th:value="${answer.reputation}"
                                                                type="number" min="-100" max="100"
-                                                               class="form-control"
                                                                placeholder="Репутация">
                                                     </td>
                                                     <td>
                                                         <label>Влияние</label>
-                                                        <input id="answer-influence" th:value="${answer.influence}"
+                                                        <input id="answer-influence" class="form-control"
+                                                               th:value="${answer.influence}"
                                                                type="number" min="-100" max="100"
-                                                               class="form-control"
                                                                placeholder="Влияние">
                                                     </td>
                                                     <td>
                                                         <label>Скрытность</label>
-                                                        <input id="answer-shadow" th:value="${answer.shadow}"
-                                                               type="number"
-                                                               min="-100" max="100"
-                                                               class="form-control"
+                                                        <input id="answer-shadow" class="form-control"
+                                                               th:value="${answer.shadow}"
+                                                               type="number" min="-100" max="100"
                                                                placeholder="Скрытность">
                                                     </td>
                                                     <td>
                                                         <label>Удача</label>
-                                                        <input id="answer-luck" th:value="${answer.luck}" type="number"
-                                                               min="-100" max="100"
-                                                               class="form-control"
+                                                        <input id="answer-luck" class="form-control"
+                                                               th:value="${answer.luck}"
+                                                               type="number" min="-100" max="100"
                                                                placeholder="Удача">
                                                     </td>
                                                 </tr>
                                             </table>
                                         </div>
-                                        <!-- Привязка карточки -->
-                                        <label>Привязка карточки</label><br/>
-                                        <div>
-                                            <button type="button" th:if="${answer.id > 0}"
-                                                    th:onclick="|saveCartAndLink(${answer.id})|"
-                                                    class="btn btn-primary">
-                                                Создать и привязать
+                                        <!-- Привязка события -->
+                                        <label>Привязка события</label><br/>
+                                        <div id="link-container">
+                                            <button class="btn btn-warning"
+                                                    type="button"
+                                                    th:if="${answer.id > 0 && answer.linkEvent == 0}"
+                                                    th:onclick="|saveEventAndLink(${answer.id})|">
+                                                Создать и привязать событие к этому ответу
                                                 <i class="bi bi-link"></i>
                                             </button>
-                                            <label th:if="${answer.id == 0}">Ответ надо сохранить</label>
+                                            <button class="btn btn-primary"
+                                                    type="button"
+                                                    th:if="${answer.linkEvent > 0}"
+
+                                                    th:onclick='|linkToEvent(${answer.linkEvent})|'>
+                                                Перейти к связанному событию
+                                                <i class="bi bi-link"></i>
+                                            </button>
+                                            <label th:class="${answer.id != 0 ? 'display-none' : ''}">Чтобы событие
+                                                можно было привязать, надо его сохранить/пересохранить</label>
 
                                         </div>
                                         <!-- Доступно только если есть предметы  -->
-                                        <div>
+                                        <div style="text-align: right">
                                             <!-- Кнопки поиска/сброса предметы -->
-                                            <div style="text-align: right">
-                                                <label style="float: left; margin-top: 5px ">Ответ виден, но доступен
-                                                    только
-                                                    если есть </label>
+                                            <label style="float: left; margin-top: 5px">Ответ виден, но доступен
+                                                только
+                                                если есть </label>
+                                            <div class="btn-group">
                                                 <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                                     <!-- Кнопка поиска элементов -->
                                                     <i class="bi bi-search"></i>
                                                 </button>
                                                 <button onclick="cleanModal(this)" type="button"
-                                                        class="btn btn-warning">
+                                                        class="btn btn-outline-primary">
                                                     <!-- Кнопка очистить выбранные элементы -->
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </div>
                                             <!-- Select отображения дефолтных/текущих/найденных предметов -->
-                                            <select id="if-things" class="form-control" multiple
+                                            <select id="if-things"
+                                                    class="form-control"
+                                                    multiple
                                                     url="/finer/thing"
                                                     th:default-size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}"
                                                     th:size="${answer.ifThings != null ? answer.ifThings.size()+2 : 2}">
@@ -238,22 +251,23 @@
                                             </select>
                                         </div>
                                         <!-- Дать предметы  -->
-                                        <div>
+                                        <div style="text-align: right">
                                             <!-- Кнопки поиска/сброса предметы -->
-                                            <div style="text-align: right">
-                                                <label style="float: left; margin-top: 5px ">Дать предметы</label>
+                                            <label style="float: left; margin-top: 5px">Дать предметы</label>
+                                            <div class="btn-group">
                                                 <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                                     <!-- Кнопка поиска элементов -->
                                                     <i class="bi bi-search"></i>
                                                 </button>
                                                 <button onclick="cleanModal(this)" type="button"
-                                                        class="btn btn-warning">
+                                                        class="btn btn-outline-primary">
                                                     <!-- Кнопка очистить выбранные элементы -->
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </div>
                                             <!-- Select отображения дефолтных/текущих/найденных предметов -->
-                                            <select id="give-things" class="form-control" multiple
+                                            <select id="give-things" class="form-control"
+                                                    multiple
                                                     url="/finer/thing"
                                                     th:default-size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}"
                                                     th:size="${answer.giveThings != null ? answer.giveThings.size()+2 : 2}">
@@ -272,23 +286,24 @@
                                             </select>
                                         </div>
                                         <!-- Открыть категорию карточек -->
-                                        <div>
+                                        <div style="text-align: right">
                                             <!-- Кнопки поиска/сброса категории -->
-                                            <div style="text-align: right">
-                                                <label style="float: left; margin-top: 5px ">Открыть категорию
-                                                    карточек</label>
+                                            <label style="float: left; margin-top: 5px">Открыть категорию
+                                                карточек</label>
+                                            <div class="btn-group">
                                                 <button onclick="showModal(this)" type="button" class="btn btn-primary">
                                                     <!-- Кнопка поиска элементов -->
                                                     <i class="bi bi-search"></i>
                                                 </button>
                                                 <button onclick="cleanModal(this)" type="button"
-                                                        class="btn btn-warning">
+                                                        class="btn btn-outline-primary">
                                                     <!-- Кнопка очистить выбранные элементы -->
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </div>
                                             <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                            <select id="open-categories" class="form-control" multiple
+                                            <select id="open-categories" class="form-control"
+                                                    multiple
                                                     exclude-options="#close-categories"
                                                     url="/finer/category"
                                                     th:default-size="${answer.openCategories != null ? answer.openCategories.size()+2 : 2}"
@@ -308,23 +323,28 @@
                                             </select>
                                         </div>
                                         <!-- Закрыть категорию карточек -->
-                                        <div>
+                                        <div style="text-align: right">
                                             <!-- Кнопки поиска/сброса категории -->
-                                            <div style="text-align: right">
-                                                <label style="float: left; margin-top: 5px ">Закрыть категорию
-                                                    карточек</label>
-                                                <button onclick="showModal(this)" type="button" class="btn btn-primary">
+                                            <label style="float: left; margin-top: 5px ">Закрыть категорию
+                                                карточек</label>
+                                            <div class="btn-group">
+                                                <button onclick="showModal(this)"
+                                                        type="button"
+                                                        class="btn btn-primary">
                                                     <!-- Кнопка поиска элементов -->
                                                     <i class="bi bi-search"></i>
                                                 </button>
-                                                <button onclick="cleanModal(this)" type="button"
-                                                        class="btn btn-warning">
+                                                <button onclick="cleanModal(this)"
+                                                        type="button"
+                                                        class="btn btn-outline-primary">
                                                     <!-- Кнопка очистить выбранные элементы -->
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </div>
                                             <!-- Select отображения дефолтных/текущих/найденных категории -->
-                                            <select id="close-categories" class="form-control" multiple
+                                            <select id="close-categories"
+                                                    class="form-control"
+                                                    multiple
                                                     exclude-options="#open-categories"
                                                     url="/finer/category"
                                                     th:default-size="${answer.closeCategories != null ? answer.closeCategories.size()+2 : 2}"
@@ -343,7 +363,7 @@
                                                 </optgroup>
                                             </select>
                                         </div>
-                                        <button th:if="${iStat.index > 0 }" class='btn btn-danger' style='float: right'
+                                        <button class='btn btn-danger' th:if="${iStat.index > 0 }" style='float: right'
                                                 onclick='$(this).parent().remove()'>
                                             <!-- Кнопка удалить -->
                                             <i class="bi bi-trash3-fill"></i>
@@ -351,19 +371,21 @@
                                         <hr style="background: 1px lightgrey"/>
                                     </div>
                                 </th:block>
-                                <button id="answer-add-button" type="button" onclick="add()" class="btn btn-primary">
+                                <button id="answer-add-button" class="btn btn-primary" type="button" onclick="add()">
                                     Добавить ответ
                                     <i class="bi bi-file-text"></i>
                                 </button>
                                 <br/><br/>
-                                <button onclick="saveCart()" type="button"
-                                        class="btn btn-success">
+                                <button class="btn btn-success"
+                                        type="button"
+                                        onclick="saveEvent()">
                                     Сохранить/Изменить
                                     <i class="bi bi-plus-circle"></i>
                                 </button>
                                 <br/><br/>
-                                <button onclick="saveCart(true)" type="button"
-                                        class="btn btn-success">
+                                <button class="btn btn-success"
+                                        type="button"
+                                        onclick="saveEvent(true)">
                                     Сохранить/Изменить и создать новую карту в той же категории
                                     <i class="bi bi-plus-circle"></i>
                                 </button>
@@ -382,7 +404,7 @@
 </div>
 <br/><br/><br/><br/><br/>
 <!-- Модальное окно категории -->
-<div class="modal fade" id="categoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+<div id="categoryModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
      aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -406,8 +428,8 @@
                 <table id="load-category-container" class="table"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
-                <button type="button" class="btn btn-primary" onclick="saveSelectedInEvent(this)">Принять</button>
+                <button class="btn btn-outline-primary" type="button" data-bs-dismiss="modal">Отменить</button>
+                <button class="btn btn-primary" type="button" onclick="saveSelectedInEvent(this)">Принять</button>
             </div>
         </div>
     </div>
@@ -494,27 +516,32 @@
     // Создать карточку с указанием id в POST_URL_QUERY = '?answerId='+answerId;
     // что говорит о том что надо создать связку с указанным Answer
     // т.е. сохранить текущую карту и сразу создать новую и указать ссылку на указанным Answer
-    function saveCartAndLink(answerId) {
-        POST_URL_QUERY = '?answerId='+answerId;
-        $('#form-save-cart').submit();
+    function saveEventAndLink(answerId) {
+        POST_URL_QUERY = '?answerId=' + answerId;
+        $('#form-save-event').submit();
     }
 
-    // Сохранить карту если saveCart(true), то после сохранения создать новую карту в той же категории
-    function saveCart(isSaveCategory) {
-        if (isSaveCategory){
-            GET_URL_QUERY = '?categoryId='+$('#category').val();
+    // Сохранить карту если saveEvent(true), то после сохранения создать новую карту в той же категории
+    function saveEvent(isSaveCategory) {
+        if (isSaveCategory) {
+            GET_URL_QUERY = '?categoryId=' + $('#category').val();
         }
-        $('#form-save-cart').submit();
+        $('#form-save-event').submit();
+    }
+
+    // Переход на событие
+    function linkToEvent(eventId) {
+        location.href = '/communication/event?eventId=' + eventId;
     }
 
     $(function () {
         // Событие (submit) сохранение карторчки
-        $('#form-save-cart').on('submit', async function (e) {
+        $('#form-save-event').on('submit', async function (e) {
             e.preventDefault();
             let event = {
                 id: $('#event-id').val(),
                 publication: $('#publication').is(":checked"),
-                useOnce: $('#use-once-cart').is(":checked"),
+                useOnce: $('#use-once-event').is(":checked"),
                 category: {
                     id: $('#category').val()
                 },
@@ -537,7 +564,7 @@
                     luck: $(answer).find('#answer-luck').val(),
                     giveThings: $(answer).find('#give-things').val().map(id => ({id: id})),
                     ifThings: $(answer).find('#if-things').val().map(id => ({id: id})),
-                    link: $(answer).find('#link-cart').val(),
+                    linkEvent: $(answer).find('#link-event').val(),
                     openCategories: $(answer).find('#open-categories').val().map(id => ({id: id})),
                     closeCategories: $(answer).find('#close-categories').val().map(id => ({id: id}))
                 })
@@ -552,11 +579,11 @@
             })
             if (data.status == 200) {
                 let eventId = await data.json();
-                if(GET_URL_QUERY == ""){
-                    GET_URL_QUERY = '?eventId='+eventId;
+                if (GET_URL_QUERY == "") {
+                    GET_URL_QUERY = '?eventId=' + eventId;
                 }
-                location.href = '/communication/event' + GET_URL_QUERY ;
-            }else {
+                location.href = '/communication/event' + GET_URL_QUERY;
+            } else {
                 GET_URL_QUERY = "";
                 POST_URL_QUERY = "";
             }
@@ -669,6 +696,8 @@
         answer.find('input, textarea').val('');
         answer.find('select option').remove();
         answer.find('input#answer-id').val('0')
+        answer.find('div#link-container').find('button').remove();
+        answer.find('div#link-container').find('label').removeClass('display-none');
         answer.find("hr").before("<button class='btn btn-danger' style='float: right' onclick='remove(this)'><i class='bi bi-trash3-fill'></i></button><hr/>");
         eventContainer.find('#answer-add-button').before(answer);
         $('.answer').each(function (key, elm) {

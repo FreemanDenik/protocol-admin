@@ -133,7 +133,7 @@ public class EventServiceImpl implements EventService {
                         ))
                 ).build();
         save(newEvent);
-        event.getAnswers().stream().filter(w -> w.getId() == answerId).findFirst().get().setLink(newEvent.getId());
+        event.getAnswers().stream().filter(w -> w.getId() == answerId).findFirst().get().setLinkEvent(newEvent.getId());
         save(event);
         return newEvent.getId();
     }
