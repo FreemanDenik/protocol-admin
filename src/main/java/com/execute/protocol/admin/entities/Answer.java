@@ -48,8 +48,11 @@ public class Answer {
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_IF_THINGS")
     private Set<Integer> ifThings;
-    @Column
-    private int linkEvent;
+//    @Column(name = "link")
+//    private int linkEvent;
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "link_event", referencedColumnName = "id")
+    private Event linkEvent;
     @Column(name = "open_categories")
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "TEMP_OPEN_CATEGORIES")

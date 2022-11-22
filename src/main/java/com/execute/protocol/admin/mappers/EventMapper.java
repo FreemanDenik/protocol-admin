@@ -6,6 +6,8 @@ import com.execute.protocol.dto.EventDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
+import java.awt.*;
+
 /**
  * Преобразователь класс Event<br>
  * Для выполнения таких преобразований как mapEventToDto,<br>
@@ -39,10 +41,12 @@ public interface EventMapper {
      * @param eventDto {@link EventDto}
      * @param event {@link Event}
      */
-    @Mapping(target = "child", ignore = true)
+  /*
     @Mapping(target = "parentEvent", ignore = true)
     @Mapping(target = "ownEvent", ignore = true)
-    @Mapping(target = "ownAnswer", ignore = true)
+    @Mapping(target = "ownAnswer", ignore = true)*/
+    @Mapping(target = "child", ignore = true)
+    @Mapping(target = "parent", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void mapUpdateEventFromDto(EventDto eventDto, @MappingTarget Event event);
 }

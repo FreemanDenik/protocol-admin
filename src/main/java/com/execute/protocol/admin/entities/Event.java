@@ -1,5 +1,6 @@
 package com.execute.protocol.admin.entities;
 
+import com.execute.protocol.admin.entities.embeddables.Parent;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -29,25 +30,19 @@ public class Event {
     @Column
     private boolean publication;
     /**
-     * Главный родительское событие (с которого начинается сюжет)
+     * Строенная таблица родительских событий и ответов
      */
-    @Column(name = "main_parent")
-    private int parentEvent;
-    /**
-     * Не посредственно родительское событие
-     */
-    @Column(name = "own_parent")
-    private int ownEvent;
-    /**
-     * Ответ который приводт к этому событию
-     */
-    @Column(name = "own_answer")
-    private int ownAnswer;
+    @Embedded
+    // @Builder.Default
+    private Parent parent;// = new Parent(0,0,0);
     /**
      * Является ли карта дочерней
      */
     @Column
     private boolean child;
+    /**
+     * используется событие многократно или однократно
+     */
     @Column
     private boolean useOnce;
     @Column
@@ -68,10 +63,12 @@ public class Event {
     @OneToMany(
             mappedBy = "event",
             fetch = FetchType.EAGER,
-            cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH},
+            cascade = CascadeType.ALL,
             orphanRemoval = true)
+    //CascadeType.REMOVE представляет собой способ удаления дочерней сущности или сущностей, когда происходит удаление ее родителя
     //Если orphanRemoval=true, то при удалении комментария из списка комментариев топика, комментарий удаляется из базы
-    //Если orphanRemoval=false, то при удалении комментария из списка, в базе комментарий остается.  Просто его внешний ключ (comment.topic_id) обнуляется, и  больше комментарий не ссылается на топик.
+    //Если orphanRemoval=false, то при удалении комментария из списка, в базе комментарий остается.  Просто его внешний ключ (comment.topic_id) обнуляется, и больше комментарий не ссылается на топик.
+    //orphanRemoval дает нам возможность удалять потерянные объекты из базы данных
     @OrderBy("id ASC")
     private Set<Answer> answers = new LinkedHashSet<>();
 

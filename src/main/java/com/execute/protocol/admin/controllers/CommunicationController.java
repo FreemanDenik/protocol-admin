@@ -74,6 +74,33 @@ public class CommunicationController {
     }
 
     /**
+     * Удаление в Answer связки с Event, либо просто удалить Event<br>
+     * Event и Answer связаны, удалив Event удаляются связанные с ним сюжетные связки (удаляется все дерево связки!!!)
+     *
+     * @param answerId
+     * @param eventId
+     * @return
+     */
+    @ResponseBody
+    @PostMapping(value = "/delete")
+    public int delete(
+            @RequestParam(name = "eventId") int eventId,
+            @RequestParam(name = "answerId", defaultValue = "0") int answerId) {
+        Event event = eventService.getEvent(eventId);
+        if (answerId > 0) {
+            event.getAnswers()
+                    .stream()
+                    .filter(e -> e.getId() == answerId).findFirst().get()
+                    .setLinkEvent(null);
+            eventService.save(event);
+        }else {
+            eventService.delete(event);
+        }
+        // если answerId == 0 значит это просто удаление Event, и мы передаем 0, чтобы создать новое событие
+        return answerId == 0 ? 0 : eventId;
+    }
+
+    /**
      * POST Создание/Изменение события
      *
      * @param eventDto

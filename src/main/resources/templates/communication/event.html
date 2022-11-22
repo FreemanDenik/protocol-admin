@@ -195,17 +195,25 @@
                                         <div id="link-container">
                                             <button class="btn btn-warning"
                                                     type="button"
-                                                    th:if="${answer.id > 0 && answer.linkEvent == 0}"
+                                                    th:if="${answer.id > 0 && answer.linkEvent == null}"
                                                     th:onclick="|saveEventAndLink(${answer.id})|">
                                                 Создать и привязать событие к этому ответу
                                                 <i class="bi bi-link"></i>
                                             </button>
                                             <button class="btn btn-primary"
                                                     type="button"
-                                                    th:if="${answer.linkEvent > 0}"
+                                                    th:if="${answer.linkEvent != null}"
 
-                                                    th:onclick='|linkToEvent(${answer.linkEvent})|'>
+                                                    th:onclick='|linkToEvent(${answer.linkEvent.id})|'>
                                                 Перейти к связанному событию
+                                                <i class="bi bi-link"></i>
+                                            </button>
+                                            <button class="btn btn-danger"
+                                                    type="button"
+                                                    th:if="${answer.linkEvent != null}"
+
+                                                    th:onclick='|deleteLinkToEvent(${model.id}, ${answer.id})|'>
+                                                Удалить связку
                                                 <i class="bi bi-link"></i>
                                             </button>
                                             <label th:class="${answer.id != 0 ? 'display-none' : ''}">Чтобы событие
@@ -364,7 +372,7 @@
                                             </select>
                                         </div>
                                         <button class='btn btn-danger' th:if="${iStat.index > 0 }" style='float: right'
-                                                onclick='$(this).parent().remove()'>
+                                                onclick='remove(this)'>
                                             <!-- Кнопка удалить -->
                                             <i class="bi bi-trash3-fill"></i>
                                         </button>
@@ -388,6 +396,16 @@
                                         onclick="saveEvent(true)">
                                     Сохранить/Изменить и создать новую карту в той же категории
                                     <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <br><br>
+
+                                <button class="btn btn-danger"
+                                        type="button"
+                                        th:if="${model.id > 0}"
+
+                                        th:onclick='|deleteEvent(${model.id})|'>
+                                    Удалить событие
+                                    <i class="bi bi-link"></i>
                                 </button>
                             </div>
                         </FORM>
@@ -532,6 +550,28 @@
     // Переход на событие
     function linkToEvent(eventId) {
         location.href = '/communication/event?eventId=' + eventId;
+    }
+    // Удалить переход на событие
+   async function deleteLinkToEvent(eventId, answerId) {
+        if (confirm('Удалить связку?')) {
+            let data = await fetch('/communication/delete?eventId=' + eventId + '&answerId=' + answerId, {
+                method: 'post'
+            });
+            // Получаем id события
+            let json = await data.json();
+            location.href = '/communication/event?eventId=' + json;
+        }
+    }
+    // Удалить событие
+   async function deleteEvent(eventId) {
+       if (confirm('Удалить событие?')) {
+           let data = await fetch('/communication/delete?eventId=' + eventId, {
+               method: 'post'
+           });
+           // Получаем id события
+           let json = await data.json();
+           location.href = '/communication/event?eventId=' + json;
+       }
     }
 
     $(function () {
@@ -695,6 +735,7 @@
         let answer = eventContainer.find('#answer').clone();
         answer.find('input, textarea').val('');
         answer.find('select option').remove();
+        answer.find('select').attr('size', 2);
         answer.find('input#answer-id').val('0')
         answer.find('div#link-container').find('button').remove();
         answer.find('div#link-container').find('label').removeClass('display-none');
@@ -705,6 +746,7 @@
         })
     }
 
+    // Удалить Answer карту
     function remove(obj) {
         if (confirm("Удалить?")) {
             $(obj).closest('.answer').remove();

@@ -2,6 +2,7 @@ package com.execute.protocol.admin.services;
 
 import com.execute.protocol.admin.entities.Answer;
 import com.execute.protocol.admin.entities.Event;
+import com.execute.protocol.admin.entities.embeddables.Parent;
 import com.execute.protocol.admin.mappers.EventMapper;
 import com.execute.protocol.admin.repositories.AnswerRepository;
 import com.execute.protocol.admin.repositories.CategoryRepository;
@@ -24,6 +25,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
 
     private final EntityManager entityManager;
+
     @Autowired
     public EventServiceImpl(EventRepository eventRepository, AnswerRepository answerRepository, CategoryRepository categoryRepository, EventMapper eventMapper, EntityManager entityManager) {
         this.eventRepository = eventRepository;
@@ -34,13 +36,23 @@ public class EventServiceImpl implements EventService {
     }
 
     /**
-     * Сохранить событие
+     * Удалить событие
+     *
      * @param event сущность событие
      * @return Event
      */
-    public Event save(Event event){
-        event.setCreateTime(LocalDateTime.now());
-        event.setUpdateTime(LocalDateTime.now());
+    public void delete(Event event) {
+        event.syncAnswers();
+        eventRepository.delete(event);
+    }
+    /**
+     * Сохранить событие
+     *
+     * @param event сущность событие
+     * @return Event
+     */
+    public Event save(Event event) {
+
         event.syncAnswers();
         eventRepository.save(event);
         return event;
@@ -49,6 +61,7 @@ public class EventServiceImpl implements EventService {
     /**
      * Сохранить событие из {@link EventDto} модели,
      * преобразование mapstruct
+     *
      * @param eventDto
      * @return Event
      */
@@ -58,6 +71,7 @@ public class EventServiceImpl implements EventService {
         // Задаем время создания
         event.setCreateTime(LocalDateTime.now());
         event.setUpdateTime(LocalDateTime.now());
+
         event.syncAnswers();
         eventRepository.save(event);
         return event;
@@ -68,13 +82,14 @@ public class EventServiceImpl implements EventService {
      * преобразование mapstruct<br>
      * В процессе удаляются или добавляются {@link Answer}<br>
      * Так же обновляются категории связанных (сюжетной связкой parent child) сущности {@link Event}
+     *
      * @param eventDto
      * @return Event
      */
     @Transactional
     public Event updateFromDto(EventDto eventDto) {
-       Event event = this.getEvent(eventDto.getId());
-       int categoryId = event.getCategory();
+        Event event = this.getEvent(eventDto.getId());
+        int categoryId = event.getCategory();
         // Удаление из Event.Answer записей которых нет в EventDto.AnswerDto
         // выражение использовать до Mapper преобразовании
         event.getAnswers()
@@ -85,6 +100,8 @@ public class EventServiceImpl implements EventService {
                                 .contains(w.getId()))
                 .collect(Collectors.toSet())
                 .forEach(event::removeAnswer);
+
+
         // Обновление (преобразование mapstruct) event данными из eventDto
         eventMapper.mapUpdateEventFromDto(eventDto, event);
         event.setUpdateTime(LocalDateTime.now());
@@ -93,7 +110,7 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(event);
         // Если при обновлении была изменена категория то,
         // меняется категория всех связанных (сюжетной связкой parent child) сущностей Event
-        if (categoryId != event.getCategory()){
+        if (categoryId != event.getCategory()) {
             Set<Event> result = eventRepository.findByCategoryAndChild(categoryId, true);
             if (!result.isEmpty()) {
                 result.forEach(w -> w.setCategory(event.getCategory()));
@@ -106,17 +123,25 @@ public class EventServiceImpl implements EventService {
     /**
      * Создание пустого события {@link Event} с
      * привязкой его к ответу {@link Answer} переданного (по сути предыдущего) {@link Event}
-     * @param event событие к котором находиться целевой ответ Answer
+     *
+     * @param event    событие к котором находиться целевой ответ Answer
      * @param answerId id ответа
      * @return
      */
     @Transactional
     public int saveAndCreateEventLink(Event event, int answerId) {
+
         Event newEvent = Event.builder()
                 .category(event.getCategory())
-                .parentEvent(event.getParentEvent() == 0 ? event.getId() : event.getParentEvent())
-                .ownEvent(event.getId())
-                .ownAnswer(answerId)
+               // .parentEvent(event.getParentEvent() == 0 ? event.getId() : event.getParentEvent())
+               // .ownEvent(event.getId())
+                //.ownAnswer(answerId)
+                //.answer(answerRepository.findById(answerId).get())
+                .parent(Parent.builder()
+                        .parentEvent((event.getParent() == null || event.getParent().getParentEvent() == 0) ? event.getId() : event.getParent().getParentEvent())
+                        .ownEvent(event.getId())
+                        .ownAnswer(answerId)
+                        .build())
                 .child(true)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
@@ -133,7 +158,14 @@ public class EventServiceImpl implements EventService {
                         ))
                 ).build();
         save(newEvent);
-        event.getAnswers().stream().filter(w -> w.getId() == answerId).findFirst().get().setLinkEvent(newEvent.getId());
+        //event.getAnswers().stream().filter(w -> w.getId() == answerId).findFirst().get().setLinkEvent(newEvent.getId());
+        event.getAnswers()
+                .stream()
+                .filter(w -> w.getId() == answerId)
+                .findFirst()
+                .get()
+                .setLinkEvent(eventRepository.findById(newEvent.getId()).get());
+        event.setUpdateTime(LocalDateTime.now());
         save(event);
         return newEvent.getId();
     }
